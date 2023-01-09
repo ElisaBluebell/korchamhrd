@@ -4,7 +4,7 @@ import webbrowser
 
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import *
+from PyQt5.QtWidgets import QWidget, QLineEdit, QLabel, QPushButton, QMessageBox, QApplication
 from PyQt5 import QtWidgets, QtGui
 
 from student_main import StudentMain
