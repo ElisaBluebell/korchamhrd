@@ -6,9 +6,10 @@ class TeacherMain(QWidget):
 
     def __init__(self):
         super().__init__()
+        self.window_title = QLabel('교수', self)
 
     def set_label(self):
-        pass
+        self.window_title.setGeometry(40, 40, 160, 220)
 
     def set_line(self):
         pass

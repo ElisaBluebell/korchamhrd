@@ -3,7 +3,7 @@ import pymysql
 import webbrowser
 
 from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import *
 from PyQt5 import QtWidgets, QtGui
 
@@ -52,9 +52,6 @@ class LoginPage(QWidget):
         self.user_pw.setFont(QtGui.QFont('D2Coding', 12))
         self.user_pw.setGeometry(20, 240, 65, 20)
 
-        # self.header_logo.setPixmap(QPixmap('image/header_logo.png'))
-        # self.header_logo.setGeometry(20, 20, 210, 62)
-
     def set_btn(self):
         self.login_btn.clicked.connect(self.login_process)
         self.login_btn.setGeometry(100, 300, 60, 30)
@@ -74,17 +71,20 @@ class LoginPage(QWidget):
         conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='korchamhrd')
         c = conn.cursor()
 
-        c.execute('SELECT * FROM korchamhrd.accountinfo;')
-        user_info = list(c.fetchall())
+        c.execute('UPDATE korchamhrd.account_info SET `login_status` = 0')
+        conn.commit()
+
+        c.execute('SELECT * FROM korchamhrd.account_info;')
+        self.user_info = list(c.fetchall())
 
         c.close()
         conn.close()
 
-        for i in range(len(user_info)):
-            if user_info[i][1] == self.user_id_input.text():
-                if user_info[i][2] == self.user_pw_input.text():
-                    user_info = list(user_info[i])
-                    print(user_info)
+        for i in range(len(self.user_info)):
+            if self.user_info[i][1] == self.user_id_input.text():
+                if self.user_info[i][2] == self.user_pw_input.text():
+                    self.user_info = list(self.user_info[i])
+                    self.log_in()
                     break
 
                 else:
@@ -92,8 +92,24 @@ class LoginPage(QWidget):
                     wrong_pw = 1
 
         i += 1
-        if i == len(user_info) and type(user_info[0]) == tuple and wrong_pw == 0:
+        if i == len(self.user_info) and type(self.user_info[0]) == tuple and wrong_pw == 0:
             QMessageBox.warning(self, '로그인 실패', '아이디를 확인하세요.')
+
+    def log_in(self):
+        conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='korchamhrd')
+        c = conn.cursor()
+
+        c.execute(f'UPDATE korchamhrd.account_info SET `login_status` = 1 WHERE user_id = "{self.user_info[1]}"')
+        conn.commit()
+
+        c.close()
+        conn.close()
+        # AccountInfo DB의 맨 처음엔 6자리의 고유 번호가 있으며 1로 시작할 경우 학생, 2로 시작할 경우 교수를 뜻함.
+        if str(self.user_info[0])[:1] == '1':
+            widget.setCurrentIndex(1)
+
+        else:
+            widget.setCurrentIndex(2)
 
     @staticmethod
     def quit_program():
