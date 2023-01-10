@@ -76,7 +76,7 @@ class LoginPage(QWidget):
         c.execute('UPDATE korchamhrd.account_info SET `login_status` = 0')
         conn.commit()
 
-        c.execute('SELECT * FROM korchamhrd.account_info;')
+        c.execute('SELECT id, user_id, user_pw FROM korchamhrd.account_info;')
         self.user_info = list(c.fetchall())
 
         c.close()
@@ -109,19 +109,20 @@ class LoginPage(QWidget):
         conn.close()
 
         # AccountInfo DB의 맨 처음엔 6자리의 고유 id가 있으며 1로 시작할 경우(10만번대) 학생, 2로 시작할 경우 교수를 뜻함.
-        if str(self.user_info[0])[:1] == '1':
-            student_main.set_db()
+        # if str(self.user_info[0])[:1] == '1':
 
-            self.user_id_input.clear()
-            self.user_pw_input.clear()
+        student_main.set_db()
 
-            widget.setCurrentIndex(1)
+        self.user_id_input.clear()
+        self.user_pw_input.clear()
 
-        else:
-            self.user_id_input.clear()
-            self.user_pw_input.clear()
+        widget.setCurrentIndex(1)
 
-            widget.setCurrentIndex(2)
+        # else:
+        #     self.user_id_input.clear()
+        #     self.user_pw_input.clear()
+        #
+        #     widget.setCurrentIndex(2)
 
     @staticmethod
     def open_web_browser():
