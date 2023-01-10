@@ -2,7 +2,7 @@ import pymysql
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QLabel, QPushButton, QCalendarWidget, QMessageBox
-from pyqt5_plugins.examplebuttonplugin import QtGui
+from PyQt5 import QtGui
 
 from schedule_board import ScheduleBoard
 

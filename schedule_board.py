@@ -1,6 +1,8 @@
+import pymysql
+
+from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QCalendarWidget, QLabel, QPushButton
-from pyqt5_plugins.examplebuttonplugin import QtGui
+from PyQt5.QtWidgets import QWidget, QCalendarWidget, QLabel, QPushButton, QListWidget
 
 
 class ScheduleBoard(QWidget):
@@ -15,6 +17,7 @@ class ScheduleBoard(QWidget):
         self.register_btn = QPushButton(self)
 
         self.calender = QCalendarWidget(self)
+        self.schedule_board = QListWidget(self)
 
         self.set_ui()
         print(self.calendar_date)
@@ -27,7 +30,9 @@ class ScheduleBoard(QWidget):
         self.set_line()
         self.set_btn()
         self.set_combo_box()
+
         self.set_calender()
+        self.set_schedule_board()
 
     def set_label(self):
         self.window_title.setText('개인별 특이사항')
@@ -48,3 +53,5 @@ class ScheduleBoard(QWidget):
         self.calender.setGeometry(150, 80, 300, 200)
         self.calender.setSelectedDate(self.calendar_date)
 
+    def set_schedule_board(self):
+        self.schedule_board.setGeometry(50, 300, 500, 150)
