@@ -125,7 +125,8 @@ class StudentMain(QWidget):
         if len(self.user_curriculum) > 12:
             self.curriculum_title.setText(f'{self.user_curriculum[:10]}\n{self.user_curriculum[10:]}')
 
-    def change_user_status(self):
+    @staticmethod
+    def change_user_status():
         conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
         c = conn.cursor()
 
@@ -156,7 +157,8 @@ class StudentMain(QWidget):
             pass
 
     def quit_program(self):
-        reply = QMessageBox.question(self, '프로그램 종료', '프로그램을 종료하시겠습니까?', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        reply = QMessageBox.question(self, '프로그램 종료', '프로그램을 종료하시겠습니까?',
+                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if reply == QMessageBox.Yes:
             self.parent().close()
 
