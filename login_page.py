@@ -36,10 +36,12 @@ class LoginPage(QWidget):
     def set_line(self):
         self.user_id_input.setFont(QtGui.QFont('D2Coding', 10))
         self.user_id_input.setGeometry(140, 180, 160, 20)
+        self.user_id_input.returnPressed.connect(self.login_process)
 
         self.user_pw_input.setFont(QtGui.QFont('D2Coding', 10))
         self.user_pw_input.setEchoMode(2)
         self.user_pw_input.setGeometry(140, 240, 160, 20)
+        self.user_pw_input.returnPressed.connect(self.login_process)
 
     def set_label(self):
         self.window_title.setFont(QtGui.QFont('D2Coding', 20))
@@ -106,6 +108,7 @@ class LoginPage(QWidget):
         conn.close()
         # AccountInfo DB의 맨 처음엔 6자리의 고유 번호가 있으며 1로 시작할 경우 학생, 2로 시작할 경우 교수를 뜻함.
         if str(self.user_info[0])[:1] == '1':
+            student_main.set_db()
             widget.setCurrentIndex(1)
 
         else:
