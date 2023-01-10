@@ -91,6 +91,7 @@ class LoginPage(QWidget):
 
                 else:
                     QMessageBox.warning(self, '로그인 실패', '비밀번호를 확인하세요.')
+                    self.user_pw_input.cursorPosition()
                     wrong_pw = 1
 
         i += 1
@@ -106,12 +107,20 @@ class LoginPage(QWidget):
 
         c.close()
         conn.close()
+
         # AccountInfo DB의 맨 처음엔 6자리의 고유 번호가 있으며 1로 시작할 경우 학생, 2로 시작할 경우 교수를 뜻함.
         if str(self.user_info[0])[:1] == '1':
             student_main.set_db()
+
+            self.user_id_input.clear()
+            self.user_pw_input.clear()
+
             widget.setCurrentIndex(1)
 
         else:
+            self.user_id_input.clear()
+            self.user_pw_input.clear()
+
             widget.setCurrentIndex(2)
 
     @staticmethod
