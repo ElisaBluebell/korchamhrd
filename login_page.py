@@ -17,31 +17,19 @@ class LoginPage(QWidget):
         super().__init__()
         self.user_info = []
 
-        self.user_id_input = QLineEdit(self)
-        self.user_pw_input = QLineEdit(self)
-
         self.window_title = QLabel('광주인력개발원', self)
         self.user_id = QLabel('아이디', self)
         self.user_pw = QLabel('비밀번호', self)
         self.header_logo = QLabel(self)
 
+        self.user_id_input = QLineEdit(self)
+        self.user_pw_input = QLineEdit(self)
+
         self.login_btn = QPushButton('로그인', self)
         self.quit_btn = QPushButton('종료', self)
         self.link_btn = QPushButton(self)
 
-        self.set_line()
-        self.set_label()
-        self.set_btn()
-
-    def set_line(self):
-        self.user_id_input.setFont(QtGui.QFont('D2Coding', 10))
-        self.user_id_input.setGeometry(140, 180, 160, 20)
-        self.user_id_input.returnPressed.connect(self.login_process)
-
-        self.user_pw_input.setFont(QtGui.QFont('D2Coding', 10))
-        self.user_pw_input.setEchoMode(2)
-        self.user_pw_input.setGeometry(140, 240, 160, 20)
-        self.user_pw_input.returnPressed.connect(self.login_process)
+        self.set_ui()
 
     def set_label(self):
         self.window_title.setFont(QtGui.QFont('D2Coding', 20))
@@ -54,6 +42,16 @@ class LoginPage(QWidget):
         self.user_pw.setFont(QtGui.QFont('D2Coding', 12))
         self.user_pw.setGeometry(20, 240, 65, 20)
 
+    def set_line(self):
+        self.user_id_input.setFont(QtGui.QFont('D2Coding', 10))
+        self.user_id_input.setGeometry(140, 180, 160, 20)
+        self.user_id_input.returnPressed.connect(self.login_process)
+
+        self.user_pw_input.setFont(QtGui.QFont('D2Coding', 10))
+        self.user_pw_input.setEchoMode(2)
+        self.user_pw_input.setGeometry(140, 240, 160, 20)
+        self.user_pw_input.returnPressed.connect(self.login_process)
+
     def set_btn(self):
         self.login_btn.clicked.connect(self.login_process)
         self.login_btn.setGeometry(100, 300, 60, 30)
@@ -65,6 +63,11 @@ class LoginPage(QWidget):
         self.link_btn.setIconSize(QSize(190, 42))
         self.link_btn.clicked.connect(lambda: webbrowser.open('https://www.hrd.go.kr/hrdp/ma/pmmao/newIndexRenewal.do'))
         self.link_btn.setGeometry(20, 20, 192, 44)
+
+    def set_ui(self):
+        self.set_line()
+        self.set_label()
+        self.set_btn()
 
     def login_process(self):
         i = 0
