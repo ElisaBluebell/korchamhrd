@@ -57,11 +57,11 @@ class StudentMain(QWidget):
     def set_label(self):
         self.user_status.setFont(QtGui.QFont('D2Coding', 20))
         self.user_status.setAlignment(Qt.AlignCenter)
-        self.user_status.setGeometry(40, 30, 50, 80)
+        self.user_status.setGeometry(40, 10, 50, 80)
 
         self.curriculum_title.setFont(QtGui.QFont('D2Coding', 16))
         self.curriculum_title.setAlignment(Qt.AlignCenter)
-        self.curriculum_title.setGeometry(90, 30, 270, 80)
+        self.curriculum_title.setGeometry(90, 10, 270, 80)
 
         self.attend_time.setFont(QtGui.QFont('D2Coding'))
         self.attend_time.setText(f'입실 시간 | 32:43')
@@ -122,8 +122,8 @@ class StudentMain(QWidget):
 
     def set_user_curriculum(self):
         self.user_curriculum = self.user_info[12]
-        if len(self.user_curriculum) > 12:
-            self.curriculum_title.setText(f'{self.user_curriculum[:10]}\n{self.user_curriculum[10:]}')
+        if len(self.user_curriculum) > 15:
+            self.curriculum_title.setText(f'{self.user_curriculum[:12]}\n{self.user_curriculum[12:]}')
 
     @staticmethod
     def change_user_status():
