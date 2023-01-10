@@ -26,7 +26,7 @@ class LoginPage(QWidget):
         self.user_pw_input = QLineEdit(self)
 
         self.login_btn = QPushButton('로그인', self)
-        self.quit_btn = QPushButton('종료', self)
+        self.close_btn = QPushButton('종료', self)
         self.link_btn = QPushButton(self)
 
         self.set_ui()
@@ -36,18 +36,14 @@ class LoginPage(QWidget):
         self.window_title.setAlignment(Qt.AlignCenter)
         self.window_title.setGeometry(0, 100, 360, 40)
 
-        self.user_id.setFont(QtGui.QFont('D2Coding', 12))
         self.user_id.setGeometry(20, 180, 50, 20)
 
-        self.user_pw.setFont(QtGui.QFont('D2Coding', 12))
         self.user_pw.setGeometry(20, 240, 65, 20)
 
     def set_line(self):
-        self.user_id_input.setFont(QtGui.QFont('D2Coding', 10))
         self.user_id_input.setGeometry(140, 180, 160, 20)
         self.user_id_input.returnPressed.connect(self.login_process)
 
-        self.user_pw_input.setFont(QtGui.QFont('D2Coding', 10))
         self.user_pw_input.setEchoMode(2)
         self.user_pw_input.setGeometry(140, 240, 160, 20)
         self.user_pw_input.returnPressed.connect(self.login_process)
@@ -56,8 +52,8 @@ class LoginPage(QWidget):
         self.login_btn.clicked.connect(self.login_process)
         self.login_btn.setGeometry(100, 300, 60, 30)
 
-        self.quit_btn.clicked.connect(self.quit_program)
-        self.quit_btn.setGeometry(200, 300, 60, 30)
+        self.close_btn.clicked.connect(self.quit_program)
+        self.close_btn.setGeometry(200, 300, 60, 30)
 
         self.link_btn.setIcon(QIcon('image/header_logo.png'))
         self.link_btn.setIconSize(QSize(190, 42))
@@ -68,6 +64,7 @@ class LoginPage(QWidget):
         self.set_line()
         self.set_label()
         self.set_btn()
+        self.setFont(QtGui.QFont('D2Coding'))
 
     def login_process(self):
         i = 0

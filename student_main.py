@@ -25,16 +25,13 @@ class StudentMain(QWidget):
 
         self.attend_btn = QPushButton(self)
         self.log_out_btn = QPushButton(self)
-        self.exit_btn = QPushButton(self)
+        self.close_btn = QPushButton(self)
         self.chat_btn = QPushButton(self)
 
         self.calender = QCalendarWidget(self)
         self.schedule_board = 0
 
-        self.set_label()
-        self.set_line()
-        self.set_btn()
-        self.set_calender()
+        self.set_ui()
 
     def set_db(self):
         conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='korchamhrd')
@@ -95,13 +92,19 @@ class StudentMain(QWidget):
         self.log_out_btn.setGeometry(60, 460, 80, 40)
         self.log_out_btn.setText('로그아웃')
 
-        self.exit_btn.clicked.connect(self.quit_program)
-        self.exit_btn.setGeometry(220, 460, 80, 40)
-        self.exit_btn.setText('종료')
+        self.close_btn.clicked.connect(self.quit_program)
+        self.close_btn.setGeometry(220, 460, 80, 40)
+        self.close_btn.setText('종료')
 
     def set_calender(self):
         self.calender.setGeometry(30, 100, 300, 200)
         self.calender.clicked.connect(self.schedule_management)
+
+    def set_ui(self):
+        self.set_label()
+        self.set_line()
+        self.set_btn()
+        self.set_calender()
 
     def schedule_management(self):
         self.schedule_board = ScheduleBoard(self.user_info, self.calender.selectedDate())
