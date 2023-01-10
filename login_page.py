@@ -61,7 +61,7 @@ class LoginPage(QWidget):
 
         self.link_btn.setIcon(QIcon('image/header_logo.png'))
         self.link_btn.setIconSize(QSize(190, 42))
-        self.link_btn.clicked.connect(lambda: webbrowser.open('https://www.hrd.go.kr/hrdp/ma/pmmao/newIndexRenewal.do'))
+        self.link_btn.clicked.connect(self.open_web_browser)
         self.link_btn.setGeometry(20, 20, 192, 44)
 
     def set_ui(self):
@@ -125,6 +125,10 @@ class LoginPage(QWidget):
             self.user_pw_input.clear()
 
             widget.setCurrentIndex(2)
+
+    @staticmethod
+    def open_web_browser():
+        webbrowser.open('https://www.hrd.go.kr/hrdp/ma/pmmao/newIndexRenewal.do')
 
     @staticmethod
     def quit_program():
