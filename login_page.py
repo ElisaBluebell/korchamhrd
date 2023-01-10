@@ -111,7 +111,7 @@ class LoginPage(QWidget):
         c.close()
         conn.close()
 
-        # AccountInfo DB의 맨 처음엔 6자리의 고유 번호가 있으며 1로 시작할 경우 학생, 2로 시작할 경우 교수를 뜻함.
+        # AccountInfo DB의 맨 처음엔 6자리의 고유 id가 있으며 1로 시작할 경우(10만번대) 학생, 2로 시작할 경우 교수를 뜻함.
         if str(self.user_info[0])[:1] == '1':
             student_main.set_db()
 
