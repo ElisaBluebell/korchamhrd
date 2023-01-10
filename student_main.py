@@ -133,8 +133,6 @@ class StudentMain(QWidget):
         c.close()
         conn.close()
 
-        pass
-
     def chat(self):
         pass
 
