@@ -122,7 +122,7 @@ class StudentMain(QWidget):
 
     def set_user_curriculum(self):
         self.user_curriculum = self.user_info[12]
-        if len(self.user_curriculum) > 15:
+        if len(self.user_curriculum) > 14:
             self.curriculum_title.setText(f'{self.user_curriculum[:12]}\n{self.user_curriculum[12:]}')
 
     @staticmethod
