@@ -7,7 +7,7 @@ from PyQt5 import QtGui
 from schedule_board import ScheduleBoard
 
 
-class StudentMain(QWidget):
+class MainPage(QWidget):
 
     def __init__(self):
         super().__init__()

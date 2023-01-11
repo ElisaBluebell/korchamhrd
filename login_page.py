@@ -7,7 +7,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QWidget, QLineEdit, QLabel, QPushButton, QMessageBox, QApplication
 from PyQt5 import QtWidgets, QtGui
 
-from student_main import StudentMain
+from main_page import MainPage
 
 
 class LoginPage(QWidget):
@@ -66,12 +66,13 @@ class LoginPage(QWidget):
         self.setFont(QtGui.QFont('D2Coding'))
 
     def login_process(self):
-        i = 0
+        # 비밀번호가 틀렸을 때 ID 확인과 메세지 중복출력 방지를 위해 비밀번호 일치 여부 변수 선언 및 초기화
         wrong_pw = 0
 
         conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='korchamhrd')
         c = conn.cursor()
 
+        # 로그인 상태 1 = 로그인, 0 = 로그아웃 상태, 상태 초기화
         c.execute('UPDATE korchamhrd.account_info SET `login_status` = 0')
         conn.commit()
 
@@ -82,9 +83,12 @@ class LoginPage(QWidget):
         conn.close()
 
         for i in range(len(self.user_info)):
+            # user_id와 user_pw가 일치하는 값이 있을 경우 로그인 함수 실행
             if self.user_info[i][1] == self.user_id_input.text():
                 if self.user_info[i][2] == self.user_pw_input.text():
                     self.user_info = list(self.user_info[i])
+                    # 로그인 이후 로그아웃 했을 때 커서를 아이디 창으로 보내기 위해 포커스를 앞으로 올림
+                    self.focusPreviousChild()
                     self.log_in()
                     break
 
@@ -92,22 +96,26 @@ class LoginPage(QWidget):
                     QMessageBox.warning(self, '로그인 실패', '비밀번호를 확인하세요.')
                     self.user_pw_input.cursorPosition()
                     wrong_pw = 1
+                    # 자동 비밀번호 전체선택
+                    self.focusPreviousChild()
+                    self.focusNextChild()
 
-        i += 1
-        if i == len(self.user_info) and type(self.user_info[0]) == tuple and wrong_pw == 0:
+        if type(self.user_info[0]) == tuple and wrong_pw == 0:
             QMessageBox.warning(self, '로그인 실패', '아이디를 확인하세요.')
+            self.focusPreviousChild()
 
     def log_in(self):
         conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='korchamhrd')
         c = conn.cursor()
 
-        c.execute(f'UPDATE korchamhrd.account_info SET `login_status` = 1 WHERE user_id = "{self.user_info[1]}"')
+        c.execute(f'UPDATE korchamhrd.account_info SET `login_status` = 1 WHERE id = "{self.user_info[0]}"')
         conn.commit()
 
         c.close()
         conn.close()
 
-        student_main.set_db()
+        # 현재 불러온 db를 토대로 메인 페이지의 db 세팅
+        main_page.set_db()
 
         self.user_id_input.clear()
         self.user_pw_input.clear()
@@ -128,10 +136,10 @@ if __name__ == '__main__':
     widget = QtWidgets.QStackedWidget()
 
     login_page = LoginPage()
-    student_main = StudentMain()
+    main_page = MainPage()
 
     widget.addWidget(login_page)
-    widget.addWidget(student_main)
+    widget.addWidget(main_page)
 
     widget.setGeometry(0, 0, 360, 540)
     widget.setWindowTitle('고용노동부 HRD-Net')
