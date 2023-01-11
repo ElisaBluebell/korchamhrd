@@ -3,15 +3,15 @@ import pymysql
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt, QDate
 from PyQt5.QtGui import QIcon, QTextCharFormat
-from PyQt5.QtWidgets import QWidget, QCalendarWidget, QLabel, QPushButton, QListWidget, QComboBox, QLineEdit, \
-    QMessageBox
+from PyQt5.QtWidgets import QWidget, QCalendarWidget, QLabel, QPushButton, QComboBox, QLineEdit, QMessageBox, \
+    QTableWidget, QTableWidgetItem
 
 
 class ScheduleBoard(QWidget):
 
-    def __init__(self, user_data, calendar_date):
+    def __init__(self, user_info, calendar_date):
         super().__init__()
-        self.user_data = user_data
+        self.user_info = user_info
         self.calendar_date = calendar_date
 
         self.window_title = QLabel(self)
@@ -32,7 +32,7 @@ class ScheduleBoard(QWidget):
         self.select_schedule_category = QComboBox(self)
 
         self.calendar = QCalendarWidget(self)
-        self.schedule_board = QListWidget(self)
+        self.schedule_board = QTableWidget(self)
 
         self.set_ui()
 
@@ -82,9 +82,9 @@ class ScheduleBoard(QWidget):
         self.select_student_name.setGeometry(410, 100, 150, 20)
 
         # 10만번대는 학생이고 20만번대는 선생이야, 학생일 경우 본인의 정보만 콤보박스에서 선택이 가능
-        if self.user_data[0] < 200000:
-            self.select_student_class.addItem(self.user_data[12])
-            self.select_student_name.addItem(self.user_data[3])
+        if self.user_info[0] < 200000:
+            self.select_student_class.addItem(self.user_info[12])
+            self.select_student_name.addItem(self.user_info[3])
 
         # 교사인 경우 curriculum_db에서 모든 수업의 정보를 받아와서 콤보박스에 추가
         else:
@@ -110,7 +110,7 @@ class ScheduleBoard(QWidget):
     def set_teacher_combo_box(self):
         self.select_student_name.clear()
         if self.select_student_class.currentText() == '교수':
-            self.select_student_name.addItem(self.user_data[3])
+            self.select_student_name.addItem(self.user_info[3])
         else:
             conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
             c = conn.cursor()
@@ -130,11 +130,19 @@ class ScheduleBoard(QWidget):
     def set_calendar(self):
         self.calendar.setGeometry(30, 60, 300, 220)
         self.calendar.setSelectedDate(self.calendar_date)
-        self.calendar.clicked.connect(self.set_calendar_date)
+        self.calendar.clicked.connect(self.select_calendar_date)
         self.set_calendar_background_color()
 
     def set_schedule_board(self):
         self.schedule_board.setGeometry(30, 300, 540, 150)
+        self.schedule_board.setColumnCount(5)
+        self.schedule_board.setColumnWidth(0, 187)
+        self.schedule_board.setColumnWidth(1, 55)
+        self.schedule_board.setColumnWidth(2, 67)
+        self.schedule_board.setColumnWidth(3, 43)
+        self.schedule_board.setColumnWidth(4, 186)
+        self.schedule_board.setHorizontalHeaderLabels(['과정', '이름', '날짜', '분류', '상세'])
+        self.schedule_board.verticalHeader().setVisible(False)
 
     def set_ui(self):
         self.setGeometry(350, 300, 600, 480)
@@ -149,7 +157,8 @@ class ScheduleBoard(QWidget):
         self.set_calendar()
         self.set_schedule_board()
 
-    def set_calendar_date(self):
+    def select_calendar_date(self):
+        self.show_schedule()
         self.date_selected_show.setText(f'{self.calendar.selectedDate().toString("yyyy-MM-dd")}')
 
     def set_calendar_background_color(self):
@@ -160,7 +169,8 @@ class ScheduleBoard(QWidget):
         conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
         c = conn.cursor()
 
-        c.execute('SELECT DISTINCT DATE_FORMAT(the_day, "%Y-%m-%d") FROM korchamhrd.schedule_db ORDER BY the_day')
+        c.execute('''SELECT DISTINCT DATE_FORMAT(the_day, "%Y-%m-%d") FROM korchamhrd.schedule_db 
+        WHERE schedule_deleted = 0 ORDER BY the_day''')
         temp = list(c.fetchall())
 
         c.close()
@@ -184,15 +194,48 @@ class ScheduleBoard(QWidget):
 
         c.execute(f'''INSERT INTO korchamhrd.schedule_db VALUES(NULL, "{self.select_student_class.currentText()}",
         "{self.select_student_name.currentText()}", "{self.date_selected_show.text()}", 
-        "{self.select_schedule_category.currentText()}", "{self.write_detail.text()}", 0)''')
-
+        "{self.select_schedule_category.currentText()}", "{self.write_detail.text()}", 0, {self.user_info[0]})''')
         conn.commit()
+
         c.close()
         conn.close()
 
     def register_schedule_alarm(self):
         QMessageBox.information(self, '일정 등록', f'''{self.select_student_name.currentText()}님 
         {self.select_schedule_category.currentText()}\n일정 등록 완료''')
+
+    def show_schedule(self):
+        self.get_schedule_db()
+        self.show_schedule_db()
+
+    def get_schedule_db(self):
+        conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
+        c = conn.cursor()
+
+        c.execute(f'''SELECT id, class, student, DATE_FORMAT(the_day, "%Y-%m-%d"), category, detail 
+        FROM korchamhrd.schedule_db WHERE the_day="{self.calendar.selectedDate().toString("yyyy-MM-dd")}"''')
+        self.schedule_db = c.fetchall()
+
+        c.close()
+        conn.close()
+
+    def show_schedule_db(self):
+        self.schedule_board.setRowCount(len(self.schedule_db))
+        for i in range(len(self.schedule_db)):
+            for j in range(1, len(self.schedule_db[i])):
+                # self.schedule_board.setItem()
+                self.schedule_board.setItem(i, j - 1, QTableWidgetItem(self.schedule_db[i][j]))
+
+    def delete_schedule(self):
+        conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
+        c = conn.cursor()
+
+        c.execute(f'UPDATE korchamhrd.schedule_db SET schedule_deleted=0 WHERE id={0}')
+
+        c.close()
+        conn.close()
+
+        self.show_schedule()
 
     def close_board(self):
         self.close()
