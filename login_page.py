@@ -60,6 +60,8 @@ class LoginPage(QWidget):
         self.link_btn.setGeometry(20, 20, 192, 44)
 
     def set_ui(self):
+        self.setWindowIcon(QIcon('image/logo.png'))
+
         self.set_line()
         self.set_label()
         self.set_btn()

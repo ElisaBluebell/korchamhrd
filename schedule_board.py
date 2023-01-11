@@ -2,6 +2,7 @@ import pymysql
 
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QWidget, QCalendarWidget, QLabel, QPushButton, QListWidget, QComboBox, QLineEdit
 
 
@@ -39,6 +40,7 @@ class ScheduleBoard(QWidget):
         self.window_title.setFont(QtGui.QFont('D2Coding', 20))
         self.window_title.setAlignment(Qt.AlignCenter)
         self.window_title.setGeometry(0, 00, 600, 40)
+        self.setWindowIcon(QIcon('image/logo.png'))
 
         self.class_selected.setText('과정명')
         self.class_selected.setGeometry(350, 60, 40, 20)
