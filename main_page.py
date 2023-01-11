@@ -37,6 +37,7 @@ class MainPage(QWidget):
         conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='korchamhrd')
         c = conn.cursor()
 
+        # 로그인 상태가 참인 DB의 행을 불러옴
         c.execute('''SELECT * FROM account_info as a
          INNER JOIN curriculum_db  as b 
          on a.curriculum_id = b.id 
@@ -76,9 +77,6 @@ class MainPage(QWidget):
         self.leave_time.setText(f'퇴실 시간 | 12:40')
         self.leave_time.setGeometry(217, 360, 103, 20)
 
-    def set_line(self):
-        pass
-
     def set_btn(self):
         self.attend_btn.clicked.connect(self.change_user_status)
         self.attend_btn.setGeometry(60, 400, 80, 40)
@@ -102,7 +100,6 @@ class MainPage(QWidget):
 
     def set_ui(self):
         self.set_label()
-        self.set_line()
         self.set_btn()
         self.set_calender()
 

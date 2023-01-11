@@ -41,7 +41,7 @@ class LoginPage(QWidget):
 
     def set_line(self):
         self.user_id_input.setGeometry(140, 180, 160, 20)
-        self.user_id_input.returnPressed.connect(self.login_process)
+        self.user_id_input.returnPressed.connect(self.login_process_from_id_input)
 
         self.user_pw_input.setEchoMode(2)
         self.user_pw_input.setGeometry(140, 240, 160, 20)
@@ -64,6 +64,11 @@ class LoginPage(QWidget):
         self.set_label()
         self.set_btn()
         self.setFont(QtGui.QFont('D2Coding'))
+
+    # 아이디 입력 라인에딧을 통해 로그인할 경우 커서를 정상 위치에 옮겨두기 위해 비밀번호 입력 라인에딧으로 커서를 보냄
+    def login_process_from_id_input(self):
+        self.focusNextChild()
+        self.login_process()
 
     def login_process(self):
         # 비밀번호가 틀렸을 때 ID 확인과 메세지 중복출력 방지를 위해 비밀번호 일치 여부 변수 선언 및 초기화
