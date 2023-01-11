@@ -39,15 +39,15 @@ class MainPage(QWidget):
         c = conn.cursor()
 
         # 로그인 상태가 참인 DB의 행을 불러옴
-        # DB 0=유저 고유번호, 3=이름, 4=메세지수신, 5=결석, 6=지각 또는 조퇴, 7=외출, 9=사용자 상태, 10=수업 고유번호
-        # 12= 수업명, 13=총 수업일수
+        # DB 0=유저 고유번호, 3=이름, 4=메세지수신, 5=결석, 6=지각, 7=조퇴, 8=외출, 10=유저 상태, 11=수업 고유번호
+        # 12=입실 시간, 13=외출 시간, 14=복귀 시간, 15=퇴실 시간, 17=수업명, 18=총 수업일수, 19=반 활성상태
         c.execute('''SELECT * FROM account_info as a
          INNER JOIN curriculum_db  as b 
          on a.curriculum_id = b.id 
          where a.login_status = 1''')
 
         self.user_info = list(c.fetchall()[0])
-        self.user_status_chk = self.user_info[9]
+        self.user_status_chk = self.user_info[10]
 
         c.close()
         conn.close()
@@ -146,7 +146,7 @@ class MainPage(QWidget):
             self.user_status.setText('퇴실')
 
     def set_user_curriculum(self):
-        self.user_curriculum = self.user_info[12]
+        self.user_curriculum = self.user_info[17]
         if len(self.user_curriculum) > 14:
             self.curriculum_title.setText(f'{self.user_curriculum[:12]}\n{self.user_curriculum[12:]}')
 

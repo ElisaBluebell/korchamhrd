@@ -15,7 +15,6 @@ class LoginPage(QWidget):
 
     def __init__(self):
         super().__init__()
-        self.make_attendance()
         self.user_info = []
 
         self.window_title = QLabel('광주인력개발원', self)
@@ -68,19 +67,6 @@ class LoginPage(QWidget):
         self.set_label()
         self.set_btn()
         self.setFont(QtGui.QFont('D2Coding'))
-
-    def make_attendance(self):
-        conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
-        c = conn.cursor()
-
-        c.execute('''SELECT a.id, a.user_name, b.class_name 
-        FROM korchamhrd.account_info AS a 
-        INNER JOIN korchamhrd.curriculum_db AS b 
-        ON a.curriculum_id=b.id 
-        WHERE a.id<200000 AND b.class_status=1''')
-
-        c.close()
-        conn.close()
 
     # 아이디 입력 라인에딧을 통해 로그인할 경우 커서를 정상 위치에 옮겨두기 위해 비밀번호 입력 라인에딧으로 커서를 보냄
     def login_process_from_id_input(self):
