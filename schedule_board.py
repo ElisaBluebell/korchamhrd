@@ -279,7 +279,6 @@ class ScheduleBoard(QWidget):
                 temp = c.fetchall()
                 if temp:
                     if temp[0][0] == int(self.schedule_board.verticalHeaderItem(self.schedule_board.currentRow()).text()):
-                        print(1)
                         c.execute(f'''UPDATE korchamhrd.schedule_db SET schedule_deleted=1
                         WHERE id={int(self.schedule_board.verticalHeaderItem(self.schedule_board.currentRow()).text())}''')
                         conn.commit()
