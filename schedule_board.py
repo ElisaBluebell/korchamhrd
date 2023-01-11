@@ -33,10 +33,6 @@ class ScheduleBoard(QWidget):
         self.schedule_board = QListWidget(self)
 
         self.set_ui()
-        print(self.calendar_date)
-        print(type(self.calendar_date))
-        print(self.user_data)
-        print(type(self.user_data[0]))
 
     def set_label(self):
         self.window_title.setText('개인별 특이사항')
