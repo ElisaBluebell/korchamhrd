@@ -48,7 +48,7 @@ class LoginPage(QWidget):
         self.user_pw_input.returnPressed.connect(self.login_process)
 
     def set_btn(self):
-        self.login_btn.clicked.connect(self.login_process)
+        self.login_btn.clicked.connect(self.login_process_with_btn)
         self.login_btn.setGeometry(100, 300, 60, 30)
 
         self.close_btn.clicked.connect(self.quit_program)
@@ -68,6 +68,11 @@ class LoginPage(QWidget):
     # 아이디 입력 라인에딧을 통해 로그인할 경우 커서를 정상 위치에 옮겨두기 위해 비밀번호 입력 라인에딧으로 커서를 보냄
     def login_process_from_id_input(self):
         self.focusNextChild()
+        self.login_process()
+
+    # 로그인 버튼을 통해 로그인할 경우
+    def login_process_with_btn(self):
+        self.focusPreviousChild()
         self.login_process()
 
     def login_process(self):
@@ -135,9 +140,11 @@ class LoginPage(QWidget):
     def open_web_browser():
         webbrowser.open('https://www.hrd.go.kr/hrdp/ma/pmmao/newIndexRenewal.do')
 
-    @staticmethod
-    def quit_program():
-        exit()
+    def quit_program(self):
+        reply = QMessageBox.question(self, '프로그램 종료', '프로그램을 종료하시겠습니까?',
+                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            exit()
 
 
 if __name__ == '__main__':
