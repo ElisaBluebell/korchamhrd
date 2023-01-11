@@ -74,7 +74,7 @@ class ScheduleBoard(QWidget):
         self.register_btn.clicked.connect(self.register_schedule_process)
 
         self.delete_btn.setText('삭  제')
-        self.delete_btn.setGeometry(425, 260, 60, 20)
+        self.delete_btn.setGeometry(420, 260, 60, 20)
         self.delete_btn.clicked.connect(self.delete_schedule)
 
         self.close_btn.setText('닫  기')
@@ -206,10 +206,12 @@ class ScheduleBoard(QWidget):
     def register_schedule_process(self):
         # DB에 일정 등록
         self.register_schedule_logic()
+        # 캘린더 새로고침
+        self.show_schedule()
+        self.write_detail.clear()
         # 중복 방지 및 확인을 위한 알림창
         self.register_schedule_alarm()
-        # 캘린더 새로고침
-        self.set_calendar()
+
 
     def register_schedule_logic(self):
         conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
