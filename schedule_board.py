@@ -67,6 +67,7 @@ class ScheduleBoard(QWidget):
         self.date_selected_show.setGeometry(410, 140, 150, 20)
 
         self.write_detail.setGeometry(410, 220, 150, 20)
+        self.write_detail.returnPressed.connect(self.register_schedule_process)
 
     def set_btn(self):
         self.register_btn.setText('등  록')
@@ -208,6 +209,7 @@ class ScheduleBoard(QWidget):
         self.register_schedule_logic()
         # 캘린더 새로고침
         self.show_schedule()
+        # 라인에딧 초기화
         self.write_detail.clear()
         # 중복 방지 및 확인을 위한 알림창
         self.register_schedule_alarm()
