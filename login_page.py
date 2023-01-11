@@ -1,6 +1,7 @@
 import sys
 import pymysql
 import webbrowser
+import time
 
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QIcon
@@ -14,6 +15,7 @@ class LoginPage(QWidget):
 
     def __init__(self):
         super().__init__()
+        self.make_attendance()
         self.user_info = []
 
         self.window_title = QLabel('광주인력개발원', self)
@@ -67,6 +69,19 @@ class LoginPage(QWidget):
         self.set_btn()
         self.setFont(QtGui.QFont('D2Coding'))
 
+    def make_attendance(self):
+        conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
+        c = conn.cursor()
+
+        c.execute('''SELECT a.id, a.user_name, b.class_name 
+        FROM korchamhrd.account_info AS a 
+        INNER JOIN korchamhrd.curriculum_db AS b 
+        ON a.curriculum_id=b.id 
+        WHERE a.id<200000 AND b.class_status=1''')
+
+        c.close()
+        conn.close()
+
     # 아이디 입력 라인에딧을 통해 로그인할 경우 커서를 정상 위치에 옮겨두기 위해 비밀번호 입력 라인에딧으로 커서를 보냄
     def login_process_from_id_input(self):
         self.focusNextChild()
@@ -88,11 +103,12 @@ class LoginPage(QWidget):
         c.execute('UPDATE korchamhrd.account_info SET `login_status` = 0')
         conn.commit()
 
+        # 0=유저 고유번호, 1=유저 계정 id, 2=유저 계정 비밀번호, 현재 반이 활성화 된 상태에 한해서 데이터를 불러옴
         c.execute('''SELECT a.id, a.user_id, a.user_pw 
         FROM korchamhrd.account_info AS a 
         INNER JOIN korchamhrd.curriculum_db AS b 
-        ON a.curriculum_id = b.id 
-        WHERE b.class_status = 1;''')
+        ON a.curriculum_id=b.id 
+        WHERE b.class_status=1;''')
         self.user_info = list(c.fetchall())
 
         c.close()
@@ -112,12 +128,13 @@ class LoginPage(QWidget):
                     QMessageBox.warning(self, '로그인 실패', '비밀번호를 확인하세요.')
                     self.user_pw_input.cursorPosition()
                     wrong_pw = 1
-                    # 자동 비밀번호 전체선택
+                    # 밀번호 틀릴 시 자동으로 비밀번호가 전체선택되게
                     self.focusPreviousChild()
                     self.focusNextChild()
 
         if type(self.user_info[0]) == tuple and wrong_pw == 0:
             QMessageBox.warning(self, '로그인 실패', '아이디를 확인하세요.')
+            # 아이디가 틀렸을 시 아이디 전체선택
             self.focusPreviousChild()
 
     def log_in(self):

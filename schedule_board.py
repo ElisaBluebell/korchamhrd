@@ -230,7 +230,7 @@ class ScheduleBoard(QWidget):
         conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
         c = conn.cursor()
 
-        c.execute(f'UPDATE korchamhrd.schedule_db SET schedule_deleted=0 WHERE id={0}')
+        c.execute(f'UPDATE korchamhrd.schedule_db SET schedule_deleted=1 WHERE id={0}')
 
         c.close()
         conn.close()
