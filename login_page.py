@@ -8,7 +8,6 @@ from PyQt5.QtWidgets import QWidget, QLineEdit, QLabel, QPushButton, QMessageBox
 from PyQt5 import QtWidgets, QtGui
 
 from student_main import StudentMain
-from teacher_main import TeacherMain
 
 
 class LoginPage(QWidget):
@@ -108,21 +107,12 @@ class LoginPage(QWidget):
         c.close()
         conn.close()
 
-        # AccountInfo DB의 맨 처음엔 6자리의 고유 id가 있으며 1로 시작할 경우(10만번대) 학생, 2로 시작할 경우 교수를 뜻함.
-        # if str(self.user_info[0])[:1] == '1':
-
         student_main.set_db()
 
         self.user_id_input.clear()
         self.user_pw_input.clear()
 
         widget.setCurrentIndex(1)
-
-        # else:
-        #     self.user_id_input.clear()
-        #     self.user_pw_input.clear()
-        #
-        #     widget.setCurrentIndex(2)
 
     @staticmethod
     def open_web_browser():
@@ -139,11 +129,9 @@ if __name__ == '__main__':
 
     login_page = LoginPage()
     student_main = StudentMain()
-    teacher_main = TeacherMain()
 
     widget.addWidget(login_page)
     widget.addWidget(student_main)
-    widget.addWidget(teacher_main)
 
     widget.setGeometry(0, 0, 360, 540)
     widget.setWindowTitle('고용노동부 HRD-Net')

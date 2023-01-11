@@ -111,12 +111,6 @@ class ScheduleBoard(QWidget):
         self.select_student_name.clear()
         conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
         c = conn.cursor()
-        #
-        # c.execute('SELECT class_name FROM korchamhrd.curriculum_db')
-        # student_class = list(c.fetchall())
-        #
-        # for i in range(len(student_class)):
-        #     self.select_student_class.addItem(student_class[i][0])
 
         c.execute(f'''SELECT user_name FROM korchamhrd.account_info AS a 
         INNER JOIN korchamhrd.curriculum_db AS b 
