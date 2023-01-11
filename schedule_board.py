@@ -116,7 +116,6 @@ class ScheduleBoard(QWidget):
         for i in range(len(schedule_category)):
             self.select_schedule_category.addItem(schedule_category[i], i)
 
-    # 관리자 버전 일정관리
     def set_teacher_combo_box(self):
         self.select_student_name.clear()
         # 콤보박스 과정명 교수인 경우 본인 이름만 선택 가능
