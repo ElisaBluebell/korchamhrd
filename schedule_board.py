@@ -84,20 +84,23 @@ class ScheduleBoard(QWidget):
 
         print(self.select_student_class.currentText())
 
+        # 10만번대는 학생이고 20만번대는 선생이야, 학생일 경우 본인의 정보만 콤보박스에서 선택이 가능
         if self.user_data[0] < 200000:
             self.select_student_class.addItem(self.user_data[12])
             self.select_student_name.addItem(self.user_data[3])
 
+        # 교사인 경우 curriculum_db에서 모든 수업의 정보를 받아와서 콤보박스에 추가
         else:
             self.select_student_class.currentTextChanged.connect(self.set_teacher_combo_box)
             conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
             c = conn.cursor()
 
-            c.execute('SELECT class_name FROM korchamhrd.curriculum_db')
+            c.execute('SELECT class_name FROM korchamhrd.curriculum_db WHERE class_status = 1')
             student_class = list(c.fetchall())
 
             for i in range(len(student_class)):
                 self.select_student_class.addItem(student_class[i][0])
+            # 학생들 이름을 콤보박스에 추가하는 함수 호출(교사모드)
             self.set_teacher_combo_box()
             c.close()
             conn.close()

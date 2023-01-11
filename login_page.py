@@ -81,7 +81,11 @@ class LoginPage(QWidget):
         c.execute('UPDATE korchamhrd.account_info SET `login_status` = 0')
         conn.commit()
 
-        c.execute('SELECT id, user_id, user_pw FROM korchamhrd.account_info;')
+        c.execute('''SELECT a.id, a.user_id, a.user_pw 
+        FROM korchamhrd.account_info AS a 
+        INNER JOIN korchamhrd.curriculum_db AS b 
+        ON a.curriculum_id = b.id 
+        WHERE b.class_status = 1;''')
         self.user_info = list(c.fetchall())
 
         c.close()

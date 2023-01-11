@@ -38,6 +38,8 @@ class MainPage(QWidget):
         c = conn.cursor()
 
         # 로그인 상태가 참인 DB의 행을 불러옴
+        # DB 0=유저 고유번호, 3=이름, 4=메세지수신, 5=결석, 6=지각 또는 조퇴, 7=외출, 9=사용자 상태, 10=수업 고유번호
+        # 12= 수업명, 13=총 수업일수
         c.execute('''SELECT * FROM account_info as a
          INNER JOIN curriculum_db  as b 
          on a.curriculum_id = b.id 
@@ -143,7 +145,7 @@ class MainPage(QWidget):
             conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
             c = conn.cursor()
 
-            c.execute(f'UPDATE korchamhrd.account_info SET login_status=0 WHERE user_id="{self.user_info[1]}"')
+            c.execute(f'UPDATE korchamhrd.account_info SET login_status=0 WHERE id="{self.user_info[0]}"')
             conn.commit()
 
             c.close()
