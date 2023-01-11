@@ -13,6 +13,7 @@ class ScheduleBoard(QWidget):
         super().__init__()
         self.user_info = user_info
         self.calendar_date = calendar_date
+        self.schedule_db = ''
 
         self.window_title = QLabel(self)
         self.class_selected = QLabel(self)
@@ -64,9 +65,9 @@ class ScheduleBoard(QWidget):
     def set_line(self):
         self.date_selected_show.setText(f'{self.calendar_date.toString("yyyy-MM-dd")}')
         self.date_selected_show.setReadOnly(True)
-        self.date_selected_show.setGeometry(410, 140, 150, 20)
+        self.date_selected_show.setGeometry(410, 140, 160, 20)
 
-        self.write_detail.setGeometry(410, 220, 150, 20)
+        self.write_detail.setGeometry(410, 220, 160, 20)
         self.write_detail.returnPressed.connect(self.register_schedule_process)
 
     def set_btn(self):
@@ -75,19 +76,19 @@ class ScheduleBoard(QWidget):
         self.register_btn.clicked.connect(self.register_schedule_process)
 
         self.delete_btn.setText('삭  제')
-        self.delete_btn.setGeometry(420, 260, 60, 20)
+        self.delete_btn.setGeometry(430, 260, 60, 20)
         self.delete_btn.clicked.connect(self.delete_schedule)
 
         self.close_btn.setText('닫  기')
-        self.close_btn.setGeometry(490, 260, 60, 20)
+        self.close_btn.setGeometry(510, 260, 60, 20)
         self.close_btn.clicked.connect(self.close_board)
 
     def set_combo_box(self):
         self.select_student_class.clear()
         self.select_student_name.clear()
 
-        self.select_student_class.setGeometry(410, 60, 150, 20)
-        self.select_student_name.setGeometry(410, 100, 150, 20)
+        self.select_student_class.setGeometry(410, 60, 160, 20)
+        self.select_student_name.setGeometry(410, 100, 160, 20)
 
         # 10만번대는 학생이고 20만번대는 선생이야, 학생일 경우 본인의 정보만 콤보박스에서 선택이 가능
         if self.user_info[0] < 200000:
@@ -110,7 +111,7 @@ class ScheduleBoard(QWidget):
             c.close()
             conn.close()
 
-        self.select_schedule_category.setGeometry(410, 180, 150, 20)
+        self.select_schedule_category.setGeometry(410, 180, 160, 20)
         schedule_category = ['과  제', '개인사', '병  가', '경조사']
         for i in range(len(schedule_category)):
             self.select_schedule_category.addItem(schedule_category[i], i)
@@ -214,7 +215,6 @@ class ScheduleBoard(QWidget):
         # 중복 방지 및 확인을 위한 알림창
         self.register_schedule_alarm()
 
-
     def register_schedule_logic(self):
         conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
         c = conn.cursor()
@@ -244,7 +244,8 @@ class ScheduleBoard(QWidget):
         c = conn.cursor()
 
         c.execute(f'''SELECT id, class, student, DATE_FORMAT(the_day, "%Y-%m-%d"), category, detail 
-        FROM korchamhrd.schedule_db WHERE the_day="{self.calendar.selectedDate().toString("yyyy-MM-dd")}"''')
+        FROM korchamhrd.schedule_db WHERE the_day="{self.calendar.selectedDate().toString("yyyy-MM-dd")}"
+        AND schedule_deleted=0''')
         self.schedule_db = c.fetchall()
 
         c.close()
@@ -256,12 +257,38 @@ class ScheduleBoard(QWidget):
         for i in range(len(self.schedule_db)):
             for j in range(1, len(self.schedule_db[i])):
                 self.schedule_board.setItem(i, j - 1, QTableWidgetItem(self.schedule_db[i][j]))
+            self.schedule_board.setVerticalHeaderItem(i, QTableWidgetItem(str(self.schedule_db[i][0])))
 
     def delete_schedule(self):
         conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
         c = conn.cursor()
 
-        c.execute(f'UPDATE korchamhrd.schedule_db SET schedule_deleted=1 WHERE id={0}')
+        if self.schedule_board.currentRow() < 0:
+            QMessageBox.warning(self, '대상 선택', '삭제하려는 일정을 선택하세요.')
+
+        else:
+            if self.user_info[0] >= 200000:
+                c.execute(f'''UPDATE korchamhrd.schedule_db SET schedule_deleted=1
+                WHERE id={int(self.schedule_board.verticalHeaderItem(self.schedule_board.currentRow()).text())}''')
+                conn.commit()
+                QMessageBox.information(self, '삭제 완료', '일정이 삭제되었습니다.')
+
+            else:
+                c.execute(f'''SELECT id FROM korchamhrd.schedule_db WHERE user_id={self.user_info[0]} 
+                AND schedule_deleted=0''')
+                temp = c.fetchall()
+                if temp:
+                    if temp[0][0] == int(self.schedule_board.verticalHeaderItem(self.schedule_board.currentRow()).text()):
+                        print(1)
+                        c.execute(f'''UPDATE korchamhrd.schedule_db SET schedule_deleted=1
+                        WHERE id={int(self.schedule_board.verticalHeaderItem(self.schedule_board.currentRow()).text())}''')
+                        conn.commit()
+                        QMessageBox.information(self, '삭제 완료', '일정이 삭제되었습니다.')
+
+                    else:
+                        QMessageBox.warning(self, '삭제 실패', '본인이 등록하지 않은 일정은\n삭제할 수 없습니다.')
+                else:
+                    QMessageBox.warning(self, '삭제 실패', '본인이 등록하지 않은 일정은\n삭제할 수 없습니다.')
 
         c.close()
         conn.close()

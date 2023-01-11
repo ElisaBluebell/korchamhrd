@@ -110,7 +110,8 @@ class MainPage(QWidget):
         conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
         c = conn.cursor()
 
-        c.execute('SELECT DISTINCT DATE_FORMAT(the_day, "%Y-%m-%d") FROM korchamhrd.schedule_db ORDER BY the_day')
+        c.execute('''SELECT DISTINCT DATE_FORMAT(the_day, "%Y-%m-%d") FROM korchamhrd.schedule_db 
+        WHERE schedule_deleted=0 ORDER BY the_day''')
         temp = list(c.fetchall())
 
         c.close()
