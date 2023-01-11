@@ -1,6 +1,7 @@
 import pymysql
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QDate
+from PyQt5.QtGui import QTextCharFormat
 from PyQt5.QtWidgets import QWidget, QLabel, QPushButton, QCalendarWidget, QMessageBox
 from PyQt5 import QtGui
 
@@ -28,7 +29,7 @@ class MainPage(QWidget):
         self.close_btn = QPushButton(self)
         self.chat_btn = QPushButton(self)
 
-        self.calender = QCalendarWidget(self)
+        self.calendar = QCalendarWidget(self)
         self.schedule_board = 0
 
         self.set_ui()
@@ -96,17 +97,39 @@ class MainPage(QWidget):
         self.close_btn.setGeometry(220, 460, 80, 40)
         self.close_btn.setText('종료')
 
-    def set_calender(self):
-        self.calender.setGeometry(30, 100, 300, 200)
-        self.calender.clicked.connect(self.schedule_management)
+    def set_calendar(self):
+        self.calendar.setGeometry(30, 100, 300, 200)
+        self.set_calendar_background()
+        self.calendar.clicked.connect(self.schedule_management)
+
+    def set_calendar_background(self):
+        fill_date_background = QTextCharFormat()
+        fill_date_background.setBackground(Qt.yellow)
+        scheduled_day = []
+
+        conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
+        c = conn.cursor()
+
+        c.execute('SELECT DISTINCT DATE_FORMAT(the_day, "%Y-%m-%d") FROM korchamhrd.schedule_db ORDER BY the_day')
+        temp = list(c.fetchall())
+
+        c.close()
+        conn.close()
+
+        for i in range(len(temp)):
+            scheduled_day.append(temp[i][0])
+
+        for date in scheduled_day:
+            the_day = QDate.fromString(date, "yyyy-MM-dd")
+            self.calendar.setDateTextFormat(the_day, fill_date_background)
 
     def set_ui(self):
         self.set_label()
         self.set_btn()
-        self.set_calender()
+        self.set_calendar()
 
     def schedule_management(self):
-        self.schedule_board = ScheduleBoard(self.user_info, self.calender.selectedDate())
+        self.schedule_board = ScheduleBoard(self.user_info, self.calendar.selectedDate())
         self.schedule_board.show()
 
     def set_user_status(self):

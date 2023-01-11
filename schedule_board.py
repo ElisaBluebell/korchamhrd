@@ -1,9 +1,10 @@
 import pymysql
 
 from PyQt5 import QtGui
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QWidget, QCalendarWidget, QLabel, QPushButton, QListWidget, QComboBox, QLineEdit
+from PyQt5.QtCore import Qt, QDate
+from PyQt5.QtGui import QIcon, QTextCharFormat
+from PyQt5.QtWidgets import QWidget, QCalendarWidget, QLabel, QPushButton, QListWidget, QComboBox, QLineEdit, \
+    QMessageBox
 
 
 class ScheduleBoard(QWidget):
@@ -21,7 +22,7 @@ class ScheduleBoard(QWidget):
         self.detail = QLabel(self)
 
         self.date_selected_show = QLineEdit(self)
-        self.detail_write = QLineEdit(self)
+        self.write_detail = QLineEdit(self)
 
         self.register_btn = QPushButton(self)
         self.close_btn = QPushButton(self)
@@ -62,12 +63,12 @@ class ScheduleBoard(QWidget):
         self.date_selected_show.setReadOnly(True)
         self.date_selected_show.setGeometry(410, 140, 150, 20)
 
-        self.detail_write.setGeometry(410, 220, 150, 20)
+        self.write_detail.setGeometry(410, 220, 150, 20)
 
     def set_btn(self):
         self.register_btn.setText('등  록')
         self.register_btn.setGeometry(350, 260, 60, 20)
-        self.register_btn.clicked.connect(self.register_schedule)
+        self.register_btn.clicked.connect(self.register_schedule_process)
 
         self.close_btn.setText('닫  기')
         self.close_btn.setGeometry(490, 260, 60, 20)
@@ -108,25 +109,29 @@ class ScheduleBoard(QWidget):
 
     def set_teacher_combo_box(self):
         self.select_student_name.clear()
-        conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
-        c = conn.cursor()
+        if self.select_student_class.currentText() == '교수':
+            self.select_student_name.addItem(self.user_data[3])
+        else:
+            conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
+            c = conn.cursor()
 
-        c.execute(f'''SELECT user_name FROM korchamhrd.account_info AS a 
-        INNER JOIN korchamhrd.curriculum_db AS b 
-        ON a.curriculum_id=b.id 
-        WHERE b.class_name="{self.select_student_class.currentText()}"''')
-        student_name = list(c.fetchall())
+            c.execute(f'''SELECT user_name FROM korchamhrd.account_info AS a 
+            INNER JOIN korchamhrd.curriculum_db AS b 
+            ON a.curriculum_id=b.id 
+            WHERE b.class_name="{self.select_student_class.currentText()}"''')
+            student_name = list(c.fetchall())
 
-        c.close()
-        conn.close()
+            c.close()
+            conn.close()
 
-        for i in range(len(student_name)):
-            self.select_student_name.addItem(student_name[i][0])
+            for i in range(len(student_name)):
+                self.select_student_name.addItem(student_name[i][0])
 
     def set_calendar(self):
         self.calendar.setGeometry(30, 60, 300, 220)
         self.calendar.setSelectedDate(self.calendar_date)
         self.calendar.clicked.connect(self.set_calendar_date)
+        self.set_calendar_background_color()
 
     def set_schedule_board(self):
         self.schedule_board.setGeometry(30, 300, 540, 150)
@@ -147,8 +152,47 @@ class ScheduleBoard(QWidget):
     def set_calendar_date(self):
         self.date_selected_show.setText(f'{self.calendar.selectedDate().toString("yyyy-MM-dd")}')
 
-    def register_schedule(self):
-        pass
+    def set_calendar_background_color(self):
+        fill_date_background = QTextCharFormat()
+        fill_date_background.setBackground(Qt.yellow)
+        scheduled_day = []
+
+        conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
+        c = conn.cursor()
+
+        c.execute('SELECT DISTINCT DATE_FORMAT(the_day, "%Y-%m-%d") FROM korchamhrd.schedule_db ORDER BY the_day')
+        temp = list(c.fetchall())
+
+        c.close()
+        conn.close()
+
+        for i in range(len(temp)):
+            scheduled_day.append(temp[i][0])
+
+        for date in scheduled_day:
+            the_day = QDate.fromString(date, "yyyy-MM-dd")
+            self.calendar.setDateTextFormat(the_day, fill_date_background)
+
+    def register_schedule_process(self):
+        self.register_schedule_logic()
+        self.register_schedule_alarm()
+        self.set_calendar()
+
+    def register_schedule_logic(self):
+        conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
+        c = conn.cursor()
+
+        c.execute(f'''INSERT INTO korchamhrd.schedule_db VALUES(NULL, "{self.select_student_class.currentText()}",
+        "{self.select_student_name.currentText()}", "{self.date_selected_show.text()}", 
+        "{self.select_schedule_category.currentText()}", "{self.write_detail.text()}", 0)''')
+
+        conn.commit()
+        c.close()
+        conn.close()
+
+    def register_schedule_alarm(self):
+        QMessageBox.information(self, '일정 등록', f'''{self.select_student_name.currentText()}님 
+        {self.select_schedule_category.currentText()}\n일정 등록 완료''')
 
     def close_board(self):
         self.close()
