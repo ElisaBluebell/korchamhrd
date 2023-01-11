@@ -78,8 +78,6 @@ class ScheduleBoard(QWidget):
         self.select_student_class.setGeometry(410, 60, 150, 20)
         self.select_student_name.setGeometry(410, 100, 150, 20)
 
-        print(self.select_student_class.currentText())
-
         # 10만번대는 학생이고 20만번대는 선생이야, 학생일 경우 본인의 정보만 콤보박스에서 선택이 가능
         if self.user_data[0] < 200000:
             self.select_student_class.addItem(self.user_data[12])
