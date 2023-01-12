@@ -56,13 +56,13 @@ class MainPage(QWidget):
         self.set_user_curriculum()
 
     def set_label(self):
-        self.user_status.setFont(QtGui.QFont('D2Coding', 20))
+        self.user_status.setFont(QtGui.QFont('D2Coding', 18))
         self.user_status.setAlignment(Qt.AlignCenter)
-        self.user_status.setGeometry(40, 10, 50, 80)
+        self.user_status.setGeometry(30, 10, 66, 80)
 
         self.curriculum_title.setFont(QtGui.QFont('D2Coding', 16))
         self.curriculum_title.setAlignment(Qt.AlignCenter)
-        self.curriculum_title.setGeometry(90, 10, 270, 80)
+        self.curriculum_title.setGeometry(100, 10, 260, 80)
 
         self.attend_time.setFont(QtGui.QFont('D2Coding'))
         self.attend_time.setText(f'입실 시간 | 32:43')
@@ -135,7 +135,7 @@ class MainPage(QWidget):
 
     def set_user_status(self):
         if self.user_status_chk == 0:
-            self.user_status.setText('대기')
+            self.user_status.setText('입실전')
 
         elif self.user_status_chk == 1:
             self.user_status.setText('입실')
@@ -150,6 +150,8 @@ class MainPage(QWidget):
         self.user_curriculum = self.user_info[17]
         if len(self.user_curriculum) > 14:
             self.curriculum_title.setText(f'{self.user_curriculum[:12]}\n{self.user_curriculum[12:]}')
+        else:
+            self.curriculum_title.setText(self.user_curriculum)
 
     @staticmethod
     def change_user_status():

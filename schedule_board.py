@@ -179,40 +179,54 @@ class ScheduleBoard(QWidget):
         fill_date_background = QTextCharFormat()
         # 해당 객체의 배경색을 노란색으로 함
         fill_date_background.setBackground(Qt.yellow)
+        clear_date_background = QTextCharFormat()
+        clear_date_background.setBackground(Qt.white)
+
         # 일정이 존재하는 날 변수 선언 및 초기화
         scheduled_day = []
 
         conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
         c = conn.cursor()
 
+        c.execute('''SELECT DISTINCT DATE_FORMAT(the_day, "%Y-%m-%d") FROM korchamhrd.schedule_db 
+        WHERE schedule_deleted = 1 ORDER BY the_day''')
+        temp1 = list(c.fetchall())
+
+        for i in range(len(temp1)):
+            scheduled_day.append(temp1[i][0])
+
+        for date in scheduled_day:
+            # the_day 변수에 문자열을 날짜 형태로 변환하여 삽입
+            the_day = QDate.fromString(date, "yyyy-MM-dd")
+            # 해당하는 날짜에 함수 시작하며 만든 텍스트 스타일 적용
+            self.calendar.setDateTextFormat(the_day, clear_date_background)
+
+        scheduled_day = []
         # 삭제처리되지 않은 날짜 부분을 YYYY-MM-DD 형태의 텍스트로 받아옴
         c.execute('''SELECT DISTINCT DATE_FORMAT(the_day, "%Y-%m-%d") FROM korchamhrd.schedule_db 
         WHERE schedule_deleted = 0 ORDER BY the_day''')
-        temp = list(c.fetchall())
+        temp2 = list(c.fetchall())
 
         c.close()
         conn.close()
 
         # 받아와서 위에 선언한 변수에 삽입
-        for i in range(len(temp)):
-            scheduled_day.append(temp[i][0])
+        for i in range(len(temp2)):
+            scheduled_day.append(temp2[i][0])
 
-        # 갑자기 든 생각인데 나 i 넘 많이쓰낭..
         for date in scheduled_day:
-            # the_day 변수에 문자열을 날짜 형태로 변환하여 삽입
             the_day = QDate.fromString(date, "yyyy-MM-dd")
-            # 해당하는 날짜에 함수 시작하며 만든 텍스트 스타일 적용
             self.calendar.setDateTextFormat(the_day, fill_date_background)
 
     def register_schedule_process(self):
         # DB에 일정 등록
         self.register_schedule_logic()
-        # 캘린더 새로고침
-        self.show_schedule()
         # 라인에딧 초기화
         self.write_detail.clear()
         # 중복 방지 및 확인을 위한 알림창
         self.register_schedule_alarm()
+        self.set_calendar_background_color()
+        self.show_schedule()
 
     def register_schedule_logic(self):
         conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
@@ -230,7 +244,6 @@ class ScheduleBoard(QWidget):
     def register_schedule_alarm(self):
         QMessageBox.information(self, '일정 등록', f'''{self.select_student_name.currentText()}님 
         {self.select_schedule_category.currentText()}\n일정 등록 완료''')
-        self.show_schedule_db()
 
     def show_schedule(self):
         # 일정 DB를 읽어오고
@@ -271,6 +284,8 @@ class ScheduleBoard(QWidget):
                 WHERE id={int(self.schedule_board.verticalHeaderItem(self.schedule_board.currentRow()).text())}''')
                 conn.commit()
                 QMessageBox.information(self, '삭제 완료', '일정이 삭제되었습니다.')
+                self.set_calendar_background_color()
+                self.show_schedule()
 
             else:
                 c.execute(f'''SELECT id FROM korchamhrd.schedule_db WHERE user_id={self.user_info[0]} 
@@ -282,6 +297,8 @@ class ScheduleBoard(QWidget):
                         WHERE id={int(self.schedule_board.verticalHeaderItem(self.schedule_board.currentRow()).text())}''')
                         conn.commit()
                         QMessageBox.information(self, '삭제 완료', '일정이 삭제되었습니다.')
+                        self.set_calendar_background_color()
+                        self.show_schedule()
 
                     else:
                         QMessageBox.warning(self, '삭제 실패', '본인이 등록하지 않은 일정은\n삭제할 수 없습니다.')
