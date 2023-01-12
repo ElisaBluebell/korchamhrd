@@ -31,6 +31,40 @@ class LoginPage(QWidget):
         self.link_btn = QPushButton(self)
 
         self.set_ui()
+        self.set_attendance()
+
+    @staticmethod
+    def set_attendance():
+        temp = ''
+        conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
+        c = conn.cursor()
+
+        try:
+            c.execute(f'SELECT * FROM korchamhrd.`{str(datetime.date.today())}`')
+            temp = c.fetchall()
+
+        except:
+            pass
+
+        c.execute(f'''CREATE TABLE IF NOT EXISTS korchamhrd.`{str(datetime.date.today())}` (id INT NOT NULL, 
+        user_name TEXT NOT NULL, message_reception INT NOT NULL, absence INT NOT NULL, tardy INT NOT NULL, 
+        leave_early INT NOT NULL, period_cut INT NOT NULL, login_status INT NOT NULL, user_status INT NOT NULL, 
+        curriculum_id INT NOT NULL, attend_time TEXT, cut_time TEXT, leave_time TEXT, return_time TEXT, 
+        day_left INT NOT NULL, PRIMARY KEY (id))''')
+
+        if temp:
+            pass
+        else:
+            c.execute(f'''SELECT * FROM korchamhrd.`{str(datetime.date.today() - datetime.timedelta(1))}`''')
+            temp = c.fetchall()
+            for i in range(len(temp)):
+                c.execute(f'''INSERT INTO korchamhrd.`{str(datetime.date.today())}` VALUES ({temp[i][0]}, 
+                "{temp[i][1]}", {temp[i][2]}, {temp[i][3]}, {temp[i][4]}, {temp[i][5]}, {temp[i][6]}, 0, 
+                0, {temp[i][9]}, "NULL", "NULL", "NULL", "NULL", {temp[i][14] - 1})''')
+                conn.commit()
+
+        c.close()
+        conn.close()
 
     def set_label(self):
         self.window_title.setFont(QtGui.QFont('D2Coding', 20))
@@ -82,14 +116,14 @@ class LoginPage(QWidget):
     def login_process(self):
         # 비밀번호가 틀렸을 때 ID 확인과 메세지 중복출력 방지를 위해 비밀번호 일치 여부 변수 선언 및 초기화
         wrong_pw = 0
-
+        print(1)
         conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='korchamhrd')
         c = conn.cursor()
-
+        print(1)
         # 로그인 상태 1 = 로그인, 0 = 로그아웃 상태, 상태 초기화
-        c.execute('UPDATE korchamhrd.account_info SET `login_status` = 0')
+        c.execute(f'UPDATE korchamhrd.`{str(datetime.date.today())}` SET `login_status` = 0')
         conn.commit()
-
+        print(1)
         # 0=유저 고유번호, 1=유저 계정 id, 2=유저 계정 비밀번호, 현재 반이 활성화 된 상태에 한해서 데이터를 불러옴
         c.execute('''SELECT a.id, a.user_id, a.user_pw 
         FROM korchamhrd.account_info AS a 
@@ -125,15 +159,17 @@ class LoginPage(QWidget):
             self.focusPreviousChild()
 
     def log_in(self):
+        print(1)
         conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='korchamhrd')
         c = conn.cursor()
-
-        c.execute(f'UPDATE korchamhrd.account_info SET `login_status` = 1 WHERE id = "{self.user_info[0]}"')
+        print(1)
+        c.execute(f'UPDATE korchamhrd.`{str(datetime.date.today())}` SET `login_status` = 1 '
+                  f'WHERE id = "{self.user_info[0]}"')
         conn.commit()
-
+        print(1)
         c.close()
         conn.close()
-
+        print(1)
         # 현재 불러온 db를 토대로 메인 페이지의 db 세팅
         print(main_page.user_info)
         main_page.set_db()

@@ -1,3 +1,5 @@
+import datetime
+
 import pymysql
 
 from PyQt5.QtCore import Qt, QDate
@@ -39,9 +41,9 @@ class MainPage(QWidget):
         c = conn.cursor()
 
         # 로그인 상태가 참인 DB의 행을 불러옴
-        # DB 0=유저 고유번호, 3=이름, 4=메세지수신, 5=결석, 6=지각, 7=조퇴, 8=외출, 10=유저 상태, 11=수업 고유번호
-        # 12=입실 시간, 13=외출 시간, 14=퇴실 시간, 15=복귀 시간, 17=수업명, 18=총 수업일수, 19=반 활성상태
-        c.execute('''SELECT * FROM account_info as a
+        # DB 0=유저 고유번호, 1=이름, 2=메세지수신, 3=결석, 4=지각, 5=조퇴, 6=외출, 8=유저 상태, 9=수업 고유번호
+        # 10=입실 시간, 11=외출 시간, 12=퇴실 시간, 13=복귀 시간, 15=남은일수 16=수업명, 17=총 수업일수, 18=반 활성상태
+        c.execute(f'''SELECT * FROM korchamhrd.`{str(datetime.date.today())}` as a
          INNER JOIN curriculum_db  as b 
          on a.curriculum_id = b.id 
          where a.login_status = 1''')
@@ -76,20 +78,20 @@ class MainPage(QWidget):
         self.user_name.setGeometry(30, 77, 300, 20)
 
     def set_label_text(self):
-        self.user_name.setText(f'{self.user_info[3]}님, 환영합니다.')
+        self.user_name.setText(f'{self.user_info[1]}님, 환영합니다.')
 
         if self.user_info[0] < 200000:
-            self.attend_time.setText(f'입실 시간 | {self.user_info[12]}')
-            self.comeback_time.setText(f'복귀 시간 | {self.user_info[15]}')
-            self.cut_off_time.setText(f'외출 시간 | {self.user_info[13]}')
-            self.leave_time.setText(f'퇴실 시간 | {self.user_info[14]}')
+            self.attend_time.setText(f'입실 시간 | {self.user_info[10]}')
+            self.comeback_time.setText(f'복귀 시간 | {self.user_info[13]}')
+            self.cut_off_time.setText(f'외출 시간 | {self.user_info[11]}')
+            self.leave_time.setText(f'퇴실 시간 | {self.user_info[12]}')
 
-            self.attend_status.setText(f'출석 {None} 결석 {self.user_info[5]}, 지각 {self.user_info[6]}, '
-                                       f'조퇴 {self.user_info[7]}, 외출 {self.user_info[8]}')
+            self.attend_status.setText(f'출석 {None} 결석 {self.user_info[3]}, 지각 {self.user_info[4]}, '
+                                       f'조퇴 {self.user_info[5]}, 외출 {self.user_info[6]}')
 
         else:
-            self.attend_time.setText(f'출근 시간 | {self.user_info[12]}')
-            self.comeback_time.setText(f'퇴근 시간 | {self.user_info[14]}')
+            self.attend_time.setText(f'출근 시간 | {self.user_info[10]}')
+            self.comeback_time.setText(f'퇴근 시간 | {self.user_info[12]}')
             self.cut_off_time.setText('')
             self.leave_time.setText('')
             self.attend_status.setText('')
@@ -113,7 +115,7 @@ class MainPage(QWidget):
         self.close_btn.setText('종료')
 
     def set_btn_activate(self):        # 유저가 출근 or 입실 전일 경우
-        if self.user_info[10] == 0:
+        if self.user_info[8] == 0:
             self.attend_btn.setGeometry(60, 400, 80, 40)
 
             if self.user_info[0] < 200000:
@@ -123,20 +125,20 @@ class MainPage(QWidget):
                 self.attend_btn.setText('출근')
 
         # 유저가 출근 or 입실했을 경우
-        elif self.user_info[10] == 1:
+        elif self.user_info[8] == 1:
             self.attend_btn.setGeometry(60, 400, 80, 40)
 
             if self.user_info[0] < 200000:
                 self.attend_btn.setText('퇴실')
 
-                if type(self.user_info[15]) != str:
+                if self.user_info[13] == 'NULL':
                     self.cut_off_btn.setGeometry(160, 400, 40, 40)
                     self.cut_off_btn.setText('외출')
 
             else:
                 self.attend_btn.setText('퇴근')
 
-        elif self.user_info[10] == 2:
+        elif self.user_info[8] == 2:
             self.cut_off_btn.setGeometry(160, 400, 40, 40)
             self.cut_off_btn.setText('복귀')
 
@@ -187,30 +189,30 @@ class MainPage(QWidget):
 
     def set_user_status(self):
         if self.user_info[0] < 200000:
-            if self.user_info[10] == 0:
+            if self.user_info[8] == 0:
                 self.user_status.setText('입실전')
     
-            elif self.user_info[10] == 1:
+            elif self.user_info[8] == 1:
                 self.user_status.setText('입실')
     
-            elif self.user_info[10] == 2:
+            elif self.user_info[8] == 2:
                 self.user_status.setText('외출')
     
             else:
                 self.user_status.setText('퇴실')
 
         else:
-            if self.user_info[10] == 0:
+            if self.user_info[8] == 0:
                 self.user_status.setText('출근전')
             
-            elif self.user_info[10] == 1:
+            elif self.user_info[8] == 1:
                 self.user_status.setText('출근')
                 
             else:
                 self.user_status.setText('퇴근')
             
     def set_user_curriculum(self):
-        self.user_curriculum = self.user_info[17]
+        self.user_curriculum = self.user_info[16]
         if len(self.user_curriculum) > 14:
             self.curriculum_title.setText(f'{self.user_curriculum[:12]}\n{self.user_curriculum[12:]}')
         else:
@@ -220,18 +222,18 @@ class MainPage(QWidget):
         conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
         c = conn.cursor()
 
-        if self.user_info[10] == 0:
-            self.user_info[10] = 1
-            c.execute(f'''UPDATE korchamhrd.account_info SET user_status=1, attend_time="{strftime('%I:%M')}" 
-            WHERE id={self.user_info[0]}''')
+        if self.user_info[8] == 0:
+            self.user_info[8] = 1
+            c.execute(f'''UPDATE korchamhrd.`{str(datetime.date.today())}` SET user_status=1, 
+            attend_time="{strftime('%I:%M')}" WHERE id={self.user_info[0]}''')
             conn.commit()
 
             QMessageBox.information(self, '입실', '입실하였습니다.')
 
-        elif self.user_info[10] == 1:
-            self.user_info[10] = 3
-            c.execute(f'''UPDATE korchamhrd.account_info SET user_status=3, leave_time="{strftime('%I:%M')}" 
-            WHERE id={self.user_info[0]}''')
+        elif self.user_info[8] == 1:
+            self.user_info[8] = 3
+            c.execute(f'''UPDATE korchamhrd.`{str(datetime.date.today())}` SET user_status=3, 
+            leave_time="{strftime('%I:%M')}" WHERE id={self.user_info[0]}''')
             conn.commit()
 
             # 수업 시간 계산, 요일별 필요충족수업시간에 맞춰 결석 또는 수업
@@ -254,18 +256,18 @@ class MainPage(QWidget):
         conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
         c = conn.cursor()
 
-        if self.user_info[10] == 1:
-            self.user_info[10] = 2
-            c.execute(f'''UPDATE korchamhrd.account_info SET user_status=2, cut_time="{strftime('%I:%M')}" 
-            WHERE id={self.user_info[0]}''')
+        if self.user_info[8] == 1:
+            self.user_info[8] = 2
+            c.execute(f'''UPDATE korchamhrd.`{str(datetime.date.today())}` SET user_status=2, 
+            cut_time="{strftime('%I:%M')}" WHERE id={self.user_info[0]}''')
             conn.commit()
 
             QMessageBox.information(self, '외출', '외출하였습니다.')
 
-        elif self.user_info[10] == 2:
-            self.user_info[10] = 1
-            c.execute(f'''UPDATE korchamhrd.account_info SET user_status=1, return_time="{strftime('%I:%M')}", 
-            period_cut={self.user_info[8] + 1} WHERE id={self.user_info[0]}''')
+        elif self.user_info[8] == 2:
+            self.user_info[8] = 1
+            c.execute(f'''UPDATE korchamhrd.`{str(datetime.date.today())}` SET user_status=1, 
+            return_time="{strftime('%I:%M')}", period_cut={self.user_info[6] + 1} WHERE id={self.user_info[0]}''')
             conn.commit()
 
             QMessageBox.information(self, '복귀', '복귀하였습니다.')
@@ -293,7 +295,8 @@ class MainPage(QWidget):
             conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
             c = conn.cursor()
 
-            c.execute(f'UPDATE korchamhrd.account_info SET login_status=0 WHERE id="{self.user_info[0]}"')
+            c.execute(f'''UPDATE korchamhrd.`{str(datetime.date.today())}` SET login_status=0 
+            WHERE id="{self.user_info[0]}"''')
             conn.commit()
 
             c.close()
