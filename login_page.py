@@ -1,3 +1,12 @@
+# 출석부 테이블이 없는 경우 새로 만들어야 함
+# 스키마는 korchamhrd, 테이블명은 문자열 YYYY-MM-DD 형식
+# 유저 id값 INT NOT NULL, 유저명 TEXT NOT NULL, 메세지 수신여부 INT NOT NULL(0 또는 1로 참, 거짓), 결석횟수 INT NOT NULL,
+# 지각횟수 INT NOT NULL, 조퇴횟수 INT NOT NULL, 외출횟수 INT NOT NULL, 로그인상태 INT NOT NULL(0 또는 1),
+# 유저 상태 INT NOT NULL(0=입실전, 1=입실, 2=외출 3=퇴실후), 수업 id값 INT NOT NULL, 출석시간 TEXT(HH:MM),
+# 외출시간 TEXT(이하 동일), 퇴실시간 TEXT, 외출복귀시간 TEXT, 남은 수업일자 INT NOT NULL, PRIMARY KEY는 (id값))
+
+# 계정 정보 테이블은 유저 id값, 유저 id, 유저 pw를 가져야 함
+
 import datetime
 import pymysql
 import sys
@@ -136,6 +145,7 @@ class LoginPage(QWidget):
                     # :을 제외하고 이어붙여 숫자 형태로 변환함
                     self.temp[i][j] = int(self.temp[i][j][:2] + self.temp[i][j][3:])
 
+    # 출석 파괴자
     def attendance_checker(self):
         for i in range(len(self.temp)):
             # 출석 시간이 없는 경우
