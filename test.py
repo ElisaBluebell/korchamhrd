@@ -193,3 +193,9 @@
 #     print("--- %s seconds ---" % {time.time() - start_time})
 #     print("shared_number=", end=""), print(shared_number)
 #     print("end of main")
+
+from time import strftime, localtime
+
+tm = localtime
+print(strftime('%I:%M'))
+print(type(strftime('%I:%M')))

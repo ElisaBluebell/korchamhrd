@@ -4,6 +4,7 @@ from PyQt5.QtCore import Qt, QDate
 from PyQt5.QtGui import QTextCharFormat
 from PyQt5.QtWidgets import QWidget, QLabel, QPushButton, QCalendarWidget, QMessageBox
 from PyQt5 import QtGui
+from time import strftime, localtime
 
 from schedule_board import ScheduleBoard
 
@@ -15,7 +16,6 @@ class MainPage(QWidget):
         self.user_info = []
         self.user_status_chk = ''
         self.user_curriculum = ''
-        self.cut_off_btn = ''
 
         self.user_status = QLabel(self)
         self.curriculum_title = QLabel(self)
@@ -28,11 +28,10 @@ class MainPage(QWidget):
         self.log_out_btn = QPushButton(self)
         self.close_btn = QPushButton(self)
         self.chat_btn = QPushButton(self)
+        self.cut_off_btn = QPushButton(self)
 
         self.calendar = QCalendarWidget(self)
         self.schedule_board = 0
-
-        self.set_ui()
 
     def set_db(self):
         conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='korchamhrd')
@@ -65,36 +64,80 @@ class MainPage(QWidget):
         self.curriculum_title.setGeometry(100, 10, 260, 80)
 
         self.attend_time.setFont(QtGui.QFont('D2Coding'))
-        self.attend_time.setText(f'입실 시간 | 32:43')
         self.attend_time.setGeometry(40, 330, 103, 20)
 
         self.comeback_time.setFont(QtGui.QFont('D2Coding'))
-        self.comeback_time.setText(f'복귀 시간 | 12:40')
+
+        self.comeback_time.setGeometry(217, 330, 103, 20)
+        self.comeback_time.setFont(QtGui.QFont('D2Coding'))
         self.comeback_time.setGeometry(217, 330, 103, 20)
 
         self.cut_off_time.setFont(QtGui.QFont('D2Coding'))
-        self.cut_off_time.setText(f'외출 시간 | 12:40')
         self.cut_off_time.setGeometry(40, 360, 103, 20)
 
         self.leave_time.setFont(QtGui.QFont('D2Coding'))
-        self.leave_time.setText(f'퇴실 시간 | 12:40')
         self.leave_time.setGeometry(217, 360, 103, 20)
+
+    def set_label_text(self):
+        if self.user_info[0] < 200000:
+            self.attend_time.setText(f'입실 시간 | {self.user_info[12]}')
+            self.comeback_time.setText(f'복귀 시간 | {self.user_info[15]}')
+            self.cut_off_time.setText(f'외출 시간 | {self.user_info[13]}')
+            self.leave_time.setText(f'퇴실 시간 | {self.user_info[14]}')
+
+        else:
+            self.attend_time.setText(f'출근 시간 | {self.user_info[12]}')
+            self.comeback_time.setText(f'퇴근 시간 | {self.user_info[14]}')
+            self.cut_off_time.setText('')
+            self.leave_time.setText('')
+
+
+
 
     def set_btn(self):
         self.attend_btn.clicked.connect(self.change_user_status)
         self.attend_btn.setGeometry(60, 400, 80, 40)
-        self.attend_btn.setText('입실')
 
         self.chat_btn.clicked.connect(self.chat)
         self.chat_btn.setGeometry(220, 400, 80, 40)
-        self.chat_btn.setText('상담')
 
         self.log_out_btn.clicked.connect(self.log_out)
         self.log_out_btn.setGeometry(60, 460, 80, 40)
-        self.log_out_btn.setText('로그아웃')
 
         self.close_btn.clicked.connect(self.quit_program)
         self.close_btn.setGeometry(220, 460, 80, 40)
+
+        self.cut_off_btn.setGeometry(0, 0, 0, 0)
+
+    def set_btn_text(self):        # 유저가 출근 or 입실 전일 경우
+        if self.user_status_chk == 0:
+            if self.user_info[0] < 200000:
+                self.attend_btn.setText('입실')
+            else:
+                self.attend_btn.setText('출근')
+
+        # 유저가 출근 or 입실했을 경우
+        elif self.user_status_chk == 1:
+            if self.user_info[0] < 200000:
+                self.attend_btn.setText('퇴실')
+
+                self.cut_off_btn.setGeometry(160, 400, 40, 40)
+                self.cut_off_btn.setText('외출')
+                self.cut_off_btn.clicked.connect(self.cut_off)
+            else:
+                self.attend_btn.setText('퇴근')
+
+        elif self.user_status_chk == 2:
+            self.cut_off_btn.setText('복귀')
+
+        elif self.user_status_chk == 3:
+            self.attend_btn.setGeometry(0, 0, 0, 0)
+            self.cut_off_btn.setGeometry(0, 0, 0, 0)
+            # 탭+엔터를 통한 외출함수 호출에 대비해 패스함수로 연결
+            self.cut_off_btn.clicked.connect(self.do_nothing)
+
+        self.chat_btn.setText('상담')
+        self.log_out_btn.setText('로그아웃')
         self.close_btn.setText('종료')
 
     def set_calendar(self):
@@ -126,7 +169,9 @@ class MainPage(QWidget):
 
     def set_ui(self):
         self.set_label()
+        self.set_label_text()
         self.set_btn()
+        self.set_btn_text()
         self.set_calendar()
 
     def schedule_management(self):
@@ -134,18 +179,29 @@ class MainPage(QWidget):
         self.schedule_board.show()
 
     def set_user_status(self):
-        if self.user_status_chk == 0:
-            self.user_status.setText('입실전')
-
-        elif self.user_status_chk == 1:
-            self.user_status.setText('입실')
-
-        elif self.user_status_chk == 2:
-            self.user_status.setText('외출')
+        if self.user_info[0] < 200000:
+            if self.user_status_chk == 0:
+                self.user_status.setText('입실전')
+    
+            elif self.user_status_chk == 1:
+                self.user_status.setText('입실')
+    
+            elif self.user_status_chk == 2:
+                self.user_status.setText('외출')
+    
+            else:
+                self.user_status.setText('퇴실')
 
         else:
-            self.user_status.setText('퇴실')
-
+            if self.user_status_chk == 0:
+                self.user_status.setText('출근전')
+            
+            elif self.user_status_chk == 1:
+                self.user_status.setText('출근')
+                
+            else:
+                self.user_status.setText('퇴근')
+            
     def set_user_curriculum(self):
         self.user_curriculum = self.user_info[17]
         if len(self.user_curriculum) > 14:
@@ -153,15 +209,37 @@ class MainPage(QWidget):
         else:
             self.curriculum_title.setText(self.user_curriculum)
 
-    @staticmethod
-    def change_user_status():
+    def change_user_status(self):
         conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
         c = conn.cursor()
+
+        if self.user_status_chk == 0:
+            self.user_status_chk = 1
+            c.execute(f'''UPDATE korchamhrd.account_info SET user_status=1, attend_time="{strftime('%I:%M')}" 
+            WHERE id={self.user_info[0]}''')
+            conn.commit()
+
+        elif self.user_status_chk == 1:
+            self.user_status_chk = 3
+            c.execute(f'''UPDATE korchamhrd.account_info SET user_status=3, leave_time="{strftime('%I:%M')}" 
+            WHERE id={self.user_info[0]}''')
+            conn.commit()
 
         c.close()
         conn.close()
 
+        self.set_db()
+        self.set_btn_text()
+        self.set_label_text()
+        self.set_user_status()
+
+    def cut_off(self):
+        pass
+
     def chat(self):
+        pass
+
+    def do_nothing(self):
         pass
 
     def log_out(self):

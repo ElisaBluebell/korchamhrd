@@ -16,6 +16,7 @@ class LoginPage(QWidget):
     def __init__(self):
         super().__init__()
         self.user_info = []
+        self.log_in_count = 0
 
         self.window_title = QLabel('광주인력개발원', self)
         self.user_id = QLabel('아이디', self)
@@ -135,6 +136,11 @@ class LoginPage(QWidget):
 
         # 현재 불러온 db를 토대로 메인 페이지의 db 세팅
         main_page.set_db()
+        if self.log_in_count == 0:
+            main_page.set_ui()
+            self.log_in_count = 1
+        main_page.set_label_text()
+        main_page.set_btn_text()
 
         self.user_id_input.clear()
         self.user_pw_input.clear()
