@@ -199,9 +199,12 @@
 # tm = localtime
 # print(strftime('%I:%M'))
 # print(type(strftime('%I:%M')))
-
 import datetime
 
-days = ['월', '화', '수', '목', '금', '토', '일']
-print(datetime.datetime.today().weekday())
-
+# print(datetime.datetime.today().weekday())
+# print(datetime.datetime.today() - datetime.timedelta(1))
+# print(datetime.datetime.now())
+today = datetime.date.today()
+target_date = datetime.date(2023, 5, 24)
+holiday = [datetime.date(2023, 1, 22), datetime.date(2023, 1, 21)]
+print(datetime.date.weekday() in (target_date - today))

@@ -101,7 +101,7 @@ class ScheduleBoard(QWidget):
             conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
             c = conn.cursor()
 
-            c.execute('SELECT class_name FROM korchamhrd.curriculum_db WHERE class_status = 1')
+            c.execute('SELECT class_name FROM korchamhrd.curriculum_db WHERE class_status > 0')
             student_class = list(c.fetchall())
 
             for i in range(len(student_class)):
@@ -135,6 +135,7 @@ class ScheduleBoard(QWidget):
             c.close()
             conn.close()
 
+            self.select_student_name.addItem('전  원')
             for i in range(len(student_name)):
                 self.select_student_name.addItem(student_name[i][0])
 

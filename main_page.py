@@ -234,6 +234,8 @@ class MainPage(QWidget):
             WHERE id={self.user_info[0]}''')
             conn.commit()
 
+            # 수업 시간 계산, 요일별 필요충족수업시간에 맞춰 결석 또는 수업
+
             QMessageBox.information(self, '퇴실', '퇴실하였습니다.')
 
         c.close()
@@ -262,8 +264,8 @@ class MainPage(QWidget):
 
         elif self.user_info[10] == 2:
             self.user_info[10] = 1
-            c.execute(f'''UPDATE korchamhrd.account_info SET user_status=1, return_time="{strftime('%I:%M')}" 
-            WHERE id={self.user_info[0]}''')
+            c.execute(f'''UPDATE korchamhrd.account_info SET user_status=1, return_time="{strftime('%I:%M')}", 
+            period_cut={self.user_info[8] + 1} WHERE id={self.user_info[0]}''')
             conn.commit()
 
             QMessageBox.information(self, '복귀', '복귀하였습니다.')
