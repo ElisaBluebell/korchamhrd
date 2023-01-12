@@ -1,7 +1,6 @@
 import sys
 import pymysql
 import webbrowser
-import time
 
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QIcon

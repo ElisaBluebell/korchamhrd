@@ -292,9 +292,11 @@ class ScheduleBoard(QWidget):
                 AND schedule_deleted=0''')
                 temp = c.fetchall()
                 if temp:
-                    if temp[0][0] == int(self.schedule_board.verticalHeaderItem(self.schedule_board.currentRow()).text()):
+                    if temp[0][0] == int(self.schedule_board.verticalHeaderItem(self.schedule_board.currentRow()
+                                                                                ).text()):
                         c.execute(f'''UPDATE korchamhrd.schedule_db SET schedule_deleted=1
-                        WHERE id={int(self.schedule_board.verticalHeaderItem(self.schedule_board.currentRow()).text())}''')
+                        WHERE id={int(self.schedule_board.verticalHeaderItem(self.schedule_board.currentRow()
+                                                                             ).text())}''')
                         conn.commit()
                         QMessageBox.information(self, '삭제 완료', '일정이 삭제되었습니다.')
                         self.set_calendar_background_color()

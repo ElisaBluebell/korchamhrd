@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt, QDate
 from PyQt5.QtGui import QTextCharFormat
 from PyQt5.QtWidgets import QWidget, QLabel, QPushButton, QCalendarWidget, QMessageBox
 from PyQt5 import QtGui
-from time import strftime, localtime
+from time import strftime
 
 from schedule_board import ScheduleBoard
 
@@ -16,6 +16,7 @@ class MainPage(QWidget):
         self.user_info = []
         self.user_status_chk = ''
         self.user_curriculum = ''
+        self.schedule_board = 0
 
         self.user_status = QLabel(self)
         self.curriculum_title = QLabel(self)
@@ -23,6 +24,8 @@ class MainPage(QWidget):
         self.cut_off_time = QLabel(self)
         self.comeback_time = QLabel(self)
         self.leave_time = QLabel(self)
+        self.attend_status = QLabel(self)
+        self.user_name = QLabel(self)
 
         self.attend_btn = QPushButton(self)
         self.log_out_btn = QPushButton(self)
@@ -31,7 +34,6 @@ class MainPage(QWidget):
         self.cut_off_btn = QPushButton(self)
 
         self.calendar = QCalendarWidget(self)
-        self.schedule_board = 0
 
     def set_db(self):
         conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='korchamhrd')
@@ -56,43 +58,43 @@ class MainPage(QWidget):
 
     def set_label(self):
         self.user_status.setFont(QtGui.QFont('D2Coding', 18))
-        self.user_status.setAlignment(Qt.AlignCenter)
-        self.user_status.setGeometry(30, 10, 66, 80)
+        self.user_status.setAlignment(Qt.AlignLeft)
+        self.user_status.setGeometry(20, 20, 70, 40)
 
         self.curriculum_title.setFont(QtGui.QFont('D2Coding', 16))
-        self.curriculum_title.setAlignment(Qt.AlignCenter)
-        self.curriculum_title.setGeometry(100, 10, 260, 80)
+        self.curriculum_title.setAlignment(Qt.AlignRight)
+        self.curriculum_title.setGeometry(100, 20, 240, 80)
 
-        self.attend_time.setFont(QtGui.QFont('D2Coding'))
         self.attend_time.setGeometry(40, 330, 103, 20)
-
-        self.comeback_time.setFont(QtGui.QFont('D2Coding'))
-
         self.comeback_time.setGeometry(217, 330, 103, 20)
-        self.comeback_time.setFont(QtGui.QFont('D2Coding'))
-        self.comeback_time.setGeometry(217, 330, 103, 20)
-
-        self.cut_off_time.setFont(QtGui.QFont('D2Coding'))
         self.cut_off_time.setGeometry(40, 360, 103, 20)
-
-        self.leave_time.setFont(QtGui.QFont('D2Coding'))
         self.leave_time.setGeometry(217, 360, 103, 20)
 
+        self.attend_status.setAlignment(Qt.AlignCenter)
+        self.attend_status.setGeometry(0, 306, 360, 20)
+
+        self.user_name.setFont(QtGui.QFont('D2Coding', 12))
+        self.user_name.setAlignment(Qt.AlignCenter)
+        self.user_name.setGeometry(30, 77, 300, 20)
+
     def set_label_text(self):
+        self.user_name.setText(f'{self.user_info[3]}님, 환영합니다.')
+
         if self.user_info[0] < 200000:
             self.attend_time.setText(f'입실 시간 | {self.user_info[12]}')
             self.comeback_time.setText(f'복귀 시간 | {self.user_info[15]}')
             self.cut_off_time.setText(f'외출 시간 | {self.user_info[13]}')
             self.leave_time.setText(f'퇴실 시간 | {self.user_info[14]}')
 
+            self.attend_status.setText(f'출석 {None} 결석 {self.user_info[5]}, 지각 {self.user_info[6]}, '
+                                       f'조퇴 {self.user_info[7]}, 외출 {self.user_info[8]}')
+
         else:
             self.attend_time.setText(f'출근 시간 | {self.user_info[12]}')
             self.comeback_time.setText(f'퇴근 시간 | {self.user_info[14]}')
             self.cut_off_time.setText('')
             self.leave_time.setText('')
-
-
-
+            self.attend_status.setText('')
 
     def set_btn(self):
         self.attend_btn.clicked.connect(self.change_user_status)
@@ -121,9 +123,14 @@ class MainPage(QWidget):
             if self.user_info[0] < 200000:
                 self.attend_btn.setText('퇴실')
 
-                self.cut_off_btn.setGeometry(160, 400, 40, 40)
-                self.cut_off_btn.setText('외출')
-                self.cut_off_btn.clicked.connect(self.cut_off)
+                if type(self.user_info[14]) == str:
+                    self.cut_off_btn.setGeometry(0, 0, 0, 0)
+                    self.cut_off_btn.clicked.connect(self.do_nothing)
+
+                else:
+                    self.cut_off_btn.setGeometry(160, 400, 40, 40)
+                    self.cut_off_btn.setText('외출')
+                    self.cut_off_btn.clicked.connect(self.cut_off)
             else:
                 self.attend_btn.setText('퇴근')
 
@@ -173,6 +180,7 @@ class MainPage(QWidget):
         self.set_btn()
         self.set_btn_text()
         self.set_calendar()
+        self.setFont(QtGui.QFont('D2Coding'))
 
     def schedule_management(self):
         self.schedule_board = ScheduleBoard(self.user_info, self.calendar.selectedDate())
@@ -234,7 +242,30 @@ class MainPage(QWidget):
         self.set_user_status()
 
     def cut_off(self):
-        pass
+        print(self.user_info[14])
+        print(type(self.user_info[14]))
+        conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
+        c = conn.cursor()
+
+        if self.user_status_chk == 1:
+            self.user_status_chk = 2
+            c.execute(f'''UPDATE korchamhrd.account_info SET user_status=2, cut_time="{strftime('%I:%M')}" 
+            WHERE id={self.user_info[0]}''')
+            conn.commit()
+
+        elif self.user_status_chk == 2:
+            self.user_status_chk = 1
+            c.execute(f'''UPDATE korchamhrd.account_info SET user_status=1, return_time="{strftime('%I:%M')}" 
+            WHERE id={self.user_info[0]}''')
+            conn.commit()
+
+        c.close()
+        conn.close()
+
+        self.set_db()
+        self.set_btn_text()
+        self.set_label_text()
+        self.set_user_status()
 
     def chat(self):
         pass
