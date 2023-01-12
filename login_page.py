@@ -19,6 +19,8 @@ class LoginPage(QWidget):
         self.user_info = []
         # 첫 로그인 확인을 위한 변수
         self.log_in_count = 0
+        # 출석부에서 사용할 DB 임시저장용 변수
+        self.temp = ''
 
         # ui 설정
         self.window_title = QLabel('광주인력개발원', self)
@@ -36,47 +38,6 @@ class LoginPage(QWidget):
         self.set_ui()
         # 출석부 제작 함수
         self.set_attendance()
-
-    # 부르면 켜지등가
-    @staticmethod
-    def set_attendance():
-        # DB 임시저장용 변수
-        temp = ''
-        # 커서 세팅
-        conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
-        c = conn.cursor()
-
-        # 일단 읽어오고
-        try:
-            c.execute(f'SELECT * FROM korchamhrd.`{str(datetime.date.today())}`')
-            temp = c.fetchall()
-        except:
-            pass
-
-        # 테이블이 만들어져있지 않을 경우 <오늘>을 이름으로 하는 출석부 테이블을 작성함
-        # 기존에 작성했던 user_account 테이블에서 로그인에만 필요한 id와 pw를 제외하고 만들어줌
-        c.execute(f'''CREATE TABLE IF NOT EXISTS korchamhrd.`{str(datetime.date.today())}` (id INT NOT NULL, 
-        user_name TEXT NOT NULL, message_reception INT NOT NULL, absence INT NOT NULL, tardy INT NOT NULL, 
-        leave_early INT NOT NULL, period_cut INT NOT NULL, login_status INT NOT NULL, user_status INT NOT NULL, 
-        curriculum_id INT NOT NULL, attend_time TEXT, cut_time TEXT, leave_time TEXT, return_time TEXT, 
-        day_left INT NOT NULL, PRIMARY KEY (id))''')
-
-        # 오늘자 테이블이 이미 있을 경우 pass
-        if temp:
-            pass
-        else:
-            # 오늘자 테이블이 없을 경우 이전 출석부에서 내용을 긁어와서
-            c.execute(f'''SELECT * FROM korchamhrd.`{str(datetime.date.today() - datetime.timedelta(1))}`''')
-            temp = list(c.fetchall())
-            # 변동사항을 적용하여 새로운 테이블에 삽입함
-            for i in range(len(temp)):
-                c.execute(f'''INSERT INTO korchamhrd.`{str(datetime.date.today())}` VALUES ({temp[i][0]}, 
-                "{temp[i][1]}", {temp[i][2]}, {temp[i][3]}, {temp[i][4]}, {temp[i][5]}, {temp[i][6]}, 0, 
-                0, {temp[i][9]}, "NULL", "NULL", "NULL", "NULL", {temp[i][14] - 1})''')
-                conn.commit()
-
-        c.close()
-        conn.close()
 
     # 라벨 스타일 세팅
     def set_label(self):
@@ -118,6 +79,177 @@ class LoginPage(QWidget):
         self.set_label()
         self.set_btn()
         self.setFont(QtGui.QFont('D2Coding'))
+
+    def set_attendance(self):
+        # 커서 세팅
+        conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
+        c = conn.cursor()
+
+        # 일단 읽어오고
+        try:
+            c.execute(f'SELECT * FROM korchamhrd.`{str(datetime.date.today())}`')
+            self.temp = c.fetchall()
+        except:
+            pass
+
+        # 테이블이 만들어져있지 않을 경우 <오늘>을 이름으로 하는 출석부 테이블을 작성함
+        # 기존에 작성했던 user_account 테이블에서 로그인에만 필요한 id와 pw를 제외하고 만들어줌
+        c.execute(f'''CREATE TABLE IF NOT EXISTS korchamhrd.`{str(datetime.date.today())}` (id INT NOT NULL, 
+        user_name TEXT NOT NULL, message_reception INT NOT NULL, absence INT NOT NULL, tardy INT NOT NULL, 
+        leave_early INT NOT NULL, period_cut INT NOT NULL, login_status INT NOT NULL, user_status INT NOT NULL, 
+        curriculum_id INT NOT NULL, attend_time TEXT, cut_time TEXT, leave_time TEXT, return_time TEXT, 
+        day_left INT NOT NULL, PRIMARY KEY (id))''')
+
+        # 오늘자 테이블이 이미 있을 경우 pass
+        if self.temp:
+            pass
+        else:
+            # 오늘자 테이블이 없을 경우 이전 출석부에서 내용을 긁어와서
+            c.execute(f'''SELECT * FROM korchamhrd.`{str(datetime.date.today() - datetime.timedelta(1))}`''')
+            self.temp = list(c.fetchall())
+
+            self.list_temp()
+            self.string_to_int()
+            self.attendance_checker()
+
+            # 변동사항을 적용하여 새로운 테이블에 삽입함
+            for i in range(len(self.temp)):
+                c.execute(f'''INSERT INTO korchamhrd.`{str(datetime.date.today())}` VALUES ({self.temp[i][0]}, 
+                "{self.temp[i][1]}", {self.temp[i][2]}, {self.temp[i][3]}, {self.temp[i][4]}, {self.temp[i][5]}, 
+                {self.temp[i][6]}, 0, 0, {self.temp[i][9]}, "NULL", "NULL", "NULL", "NULL", {self.temp[i][14] - 1})''')
+                conn.commit()
+
+        c.close()
+        conn.close()
+
+    def list_temp(self):
+        # self.temp 요소를 수정 가능한 list 형태로 변환
+        for i in range(len(self.temp)):
+            self.temp[i] = list(self.temp[i])
+
+    # text 형태로 저장된 DB의 시간값을 크기 비교를 위해 숫자로 변환
+    def string_to_int(self):
+        for i in range(len(self.temp)):
+            for j in range(10, 14):
+                # 값이 존재할 경우
+                if self.temp[i][j]:
+                    # :을 제외하고 이어붙여 숫자 형태로 변환함
+                    self.temp[i][j] = int(self.temp[i][j][:2] + self.temp[i][j][3:])
+
+    def attendance_checker(self):
+        for i in range(len(self.temp)):
+            # 출석 시간이 없는 경우
+            if not self.temp[i][10]:
+                # 결석 횟수 1회 증가
+                self.temp[i][3] += 1
+
+            # (이후 결석 조건) 퇴실 시간이 없는 경우
+            elif not self.temp[i][12]:
+                self.temp[i][3] += 1
+
+            # 출석 시간이 12시 35분(월요일, 금요일 중간시간)보다 늦은 경우
+            elif self.temp[i][10] > 1235:
+                # 월요일과 목요일이 아니라면
+                if datetime.date.today().weekday() != 0 and datetime.date.today().weekday() != 4:
+                    # 13시 5분보다 늦은 경우
+                    if self.temp[i][10] > 1305:
+                        self.temp[i][3] += 1
+                else:
+                    self.temp[i][3] += 1
+
+            # 퇴실 시간이 12시 35분보다 빠른 경우
+            elif self.temp[i][12] < 1235:
+                if datetime.date.today().weekday() != 0 and datetime.date.today().weekday() != 4:
+                    if self.temp[i][12] < 1305:
+                        self.temp[i][3] += 1
+                else:
+                    self.temp[i][3] += 1
+
+            # 외출 했을 때
+            elif self.temp[i][12]:
+                # 외출 복귀 시간이 없는 경우
+                if not self.temp[i][13]:
+                    self.temp[i][3] += 1
+
+                # 9시 20분 이전에 입실했을 때
+                elif self.temp[i][10] < 920:
+                    if datetime.date.today().weekday() != 0 and datetime.date.today().weekday() != 4:
+                        # 16시 50분 이후 퇴실했는데
+                        if self.temp[i][12] > 1650:
+                            # ((외출 시간 - 9시 20분) + (16시 50분 - 복귀 시간))보다 (복귀 시간 - 외출 시간)이 크다면,
+                            # 즉 외출 시간이 수업 시간보다 길다면
+                            if ((self.temp[i][11] - 920) + (1650 - self.temp[i][13])) < (self.temp[i][13] -
+                                                                                         self.temp[i][11]):
+                                self.temp[i][3] += 1
+
+                        # 16시 50분 이전에 퇴실한 경우 외출 시간이 수업시간보다 길다면
+                        else:
+                            if ((self.temp[i][11] - 920) + (self.temp[i][12] - self.temp[i][13])) < (self.temp[i][13] -
+                                                                                                     self.temp[i][11]):
+                                self.temp[i][3] += 1
+
+                    # 월요일 or 금요일인 경우
+                    else:
+                        if self.temp[i][12] > 1550:
+                            if ((self.temp[i][11] - 920) + (1550 - self.temp[i][13])) < (self.temp[i][13] -
+                                                                                         self.temp[i][11]):
+                                self.temp[i][3] += 1
+
+                        else:
+                            if ((self.temp[i][11] - 920) + (self.temp[i][12] - self.temp[i][13])) < (self.temp[i][13] -
+                                                                                                     self.temp[i][11]):
+                                self.temp[i][3] += 1
+
+                # 9시 20분 이후 입실한 경우
+                else:
+                    if datetime.date.today().weekday() != 0 and datetime.date.today().weekday() != 4:
+                        if self.temp[i][12] > 1650:
+                            if ((self.temp[i][11] - self.temp[i][10]) + (1650 - self.temp[i][13])) < \
+                                    (self.temp[i][13] - self.temp[i][11]):
+                                self.temp[i][3] += 1
+
+                        else:
+                            if ((self.temp[i][11] - self.temp[i][10]) + (self.temp[i][12] - self.temp[i][13])) < \
+                                    (self.temp[i][13] - self.temp[i][11]):
+                                self.temp[i][3] += 1
+
+                    else:
+                        if self.temp[i][12] > 1550:
+                            if ((self.temp[i][11] - self.temp[i][10]) + (1550 - self.temp[i][13])) < \
+                                    (self.temp[i][13] - self.temp[i][11]):
+                                self.temp[i][3] += 1
+
+                        else:
+                            if ((self.temp[i][11] - self.temp[i][10]) + (self.temp[i][12] - self.temp[i][13])) < \
+                                    (self.temp[i][13] - self.temp[i][11]):
+                                self.temp[i][3] += 1
+
+            # 위의 결석 조건들에 속하지 않으면서 9시 20분 이후 출석했을 경우
+            elif self.temp[i][10] > 920:
+                # 지각 +1
+                self.temp[i][4] += 1
+                # 지각과 조퇴의 합이 3의 배수일 경우
+                if self.temp[i][4] + self.temp[i][5] % 3 == 0:
+                    # 결석 + 1
+                    self.temp[i][3] += 1
+
+            # 15시 50분 이전 퇴실했을 경우
+            elif self.temp[i][12] < 1550:
+                # 월요일과 금요일이 아니라면
+                if datetime.date.today().weekday() != 0 and datetime.date.today().weekday() != 4:
+                    # 16시 50분 이전 퇴실했을 경우
+                    if self.temp[i][12] < 1650:
+                        # 조퇴 +1
+                        self.temp[i][5] += 1
+                        if self.temp[i][4] + self.temp[i][5] % 3 == 0:
+                            self.temp[i][3] += 1
+
+                # 월요일과 금요일은 그냥 +1
+                else:
+                    self.temp[i][5] += 1
+                    if self.temp[i][4] + self.temp[i][5] % 3 == 0:
+                        self.temp[i][3] += 1
+                        # 출석은 다른 로직으로 구해서 없음
 
     # 아이디 입력 라인에딧을 통해 로그인할 경우 커서를 기준점인 비밀번호 입력 라인에딧으로 커서를 보냄
     def login_process_from_id_input(self):
@@ -213,7 +345,7 @@ class LoginPage(QWidget):
         main_page.set_btn_deactivate()
 
         # 토요일, 일요일에는 로그인 버튼, 외출 버튼이 활성화되지 않음, 그 외 요일에는 버튼 활성화
-        if datetime.datetime.today().weekday() != 5 and datetime.datetime.today().weekday() != 6:
+        if datetime.date.today().weekday() != 5 and datetime.date.today().weekday() != 6:
             main_page.set_btn_activate()
 
         # 라벨 텍스트와 유저 상태를 현재 로그인 하는 유저에 맞게 설정
