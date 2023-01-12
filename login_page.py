@@ -134,12 +134,17 @@ class LoginPage(QWidget):
         conn.close()
 
         # 현재 불러온 db를 토대로 메인 페이지의 db 세팅
+        print(main_page.user_info)
         main_page.set_db()
+        print(main_page.user_info)
         if self.log_in_count == 0:
             main_page.set_ui()
             self.log_in_count = 1
+        print(1)
+        main_page.set_btn_deactivate()
+        main_page.set_btn_activate()
         main_page.set_label_text()
-        main_page.set_btn_text()
+        main_page.set_user_status()
 
         self.user_id_input.clear()
         self.user_pw_input.clear()

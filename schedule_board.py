@@ -243,7 +243,7 @@ class ScheduleBoard(QWidget):
 
     def register_schedule_alarm(self):
         QMessageBox.information(self, '일정 등록', f'''{self.select_student_name.currentText()}님 
-        {self.select_schedule_category.currentText()}\n일정 등록 완료''')
+        {self.select_schedule_category.currentText()} 등록 완료''')
 
     def show_schedule(self):
         # 일정 DB를 읽어오고
