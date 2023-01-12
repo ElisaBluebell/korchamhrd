@@ -116,14 +116,11 @@ class LoginPage(QWidget):
     def login_process(self):
         # 비밀번호가 틀렸을 때 ID 확인과 메세지 중복출력 방지를 위해 비밀번호 일치 여부 변수 선언 및 초기화
         wrong_pw = 0
-        print(1)
         conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='korchamhrd')
         c = conn.cursor()
-        print(1)
         # 로그인 상태 1 = 로그인, 0 = 로그아웃 상태, 상태 초기화
         c.execute(f'UPDATE korchamhrd.`{str(datetime.date.today())}` SET `login_status` = 0')
         conn.commit()
-        print(1)
         # 0=유저 고유번호, 1=유저 계정 id, 2=유저 계정 비밀번호, 현재 반이 활성화 된 상태에 한해서 데이터를 불러옴
         c.execute('''SELECT a.id, a.user_id, a.user_pw 
         FROM korchamhrd.account_info AS a 
@@ -159,25 +156,18 @@ class LoginPage(QWidget):
             self.focusPreviousChild()
 
     def log_in(self):
-        print(1)
         conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='korchamhrd')
         c = conn.cursor()
-        print(1)
         c.execute(f'UPDATE korchamhrd.`{str(datetime.date.today())}` SET `login_status` = 1 '
                   f'WHERE id = "{self.user_info[0]}"')
         conn.commit()
-        print(1)
         c.close()
         conn.close()
-        print(1)
         # 현재 불러온 db를 토대로 메인 페이지의 db 세팅
-        print(main_page.user_info)
         main_page.set_db()
-        print(main_page.user_info)
         if self.log_in_count == 0:
             main_page.set_ui()
             self.log_in_count = 1
-        print(1)
         main_page.set_btn_text()
         main_page.set_btn_deactivate()
         # 토요일, 일요일에는 로그인 버튼, 외출 버튼이 활성화되지 않음

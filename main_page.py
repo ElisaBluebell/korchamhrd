@@ -251,8 +251,6 @@ class MainPage(QWidget):
         self.set_user_status()
 
     def cut_off(self):
-        print(self.user_info)
-        print(type(self.user_info))
         conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
         c = conn.cursor()
 
