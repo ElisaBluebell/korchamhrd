@@ -227,8 +227,10 @@ class MainPage(QWidget):
             c.execute(f'''UPDATE korchamhrd.`{str(datetime.date.today())}` SET user_status=1, 
             attend_time="{strftime('%I:%M')}" WHERE id={self.user_info[0]}''')
             conn.commit()
-
-            QMessageBox.information(self, '입실', '입실하였습니다.')
+            if self.user_info[9] != 1:
+                QMessageBox.information(self, '입실', '입실하였습니다.')
+            else:
+                QMessageBox.information(self, '출근', '출근하였습니다.')
 
         elif self.user_info[8] == 1:
             self.user_info[8] = 3
@@ -236,9 +238,10 @@ class MainPage(QWidget):
             leave_time="{strftime('%I:%M')}" WHERE id={self.user_info[0]}''')
             conn.commit()
 
-            # 수업 시간 계산, 요일별 필요충족수업시간에 맞춰 결석 또는 수업
-
-            QMessageBox.information(self, '퇴실', '퇴실하였습니다.')
+            if self.user_info[9] != 1:
+                QMessageBox.information(self, '퇴실', '퇴실하였습니다.')
+            else:
+                QMessageBox.information(self, '퇴근', '퇴근하였습니다.')
 
         c.close()
         conn.close()

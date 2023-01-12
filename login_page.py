@@ -42,7 +42,6 @@ class LoginPage(QWidget):
         try:
             c.execute(f'SELECT * FROM korchamhrd.`{str(datetime.date.today())}`')
             temp = c.fetchall()
-
         except:
             pass
 
@@ -149,6 +148,7 @@ class LoginPage(QWidget):
                     # 밀번호 틀릴 시 자동으로 비밀번호가 전체선택되게
                     self.focusPreviousChild()
                     self.focusNextChild()
+                    break
 
         if type(self.user_info[0]) == tuple and wrong_pw == 0:
             QMessageBox.warning(self, '로그인 실패', '아이디를 확인하세요.')
