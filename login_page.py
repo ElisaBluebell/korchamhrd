@@ -144,8 +144,8 @@ class LoginPage(QWidget):
         print(1)
         main_page.set_btn_text()
         main_page.set_btn_deactivate()
-        # 토요일, 일요일에는
-        if datetime.datetime.today().weekday() != 3 and datetime.datetime.today().weekday() != 4:
+        # 토요일, 일요일에는 로그인 버튼, 외출 버튼이 활성화되지 않음
+        if datetime.datetime.today().weekday() != 5 and datetime.datetime.today().weekday() != 6:
             main_page.set_btn_activate()
         main_page.set_label_text()
         main_page.set_user_status()

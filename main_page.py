@@ -272,7 +272,7 @@ class MainPage(QWidget):
         conn.close()
 
         self.set_db()
-        self.set_btn_text
+        self.set_btn_text()
         self.set_btn_deactivate()
         self.set_btn_activate()
         self.set_label_text()
