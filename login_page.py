@@ -1,6 +1,7 @@
 import sys
 import pymysql
 import webbrowser
+import datetime
 
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QIcon
@@ -141,8 +142,11 @@ class LoginPage(QWidget):
             main_page.set_ui()
             self.log_in_count = 1
         print(1)
+        main_page.set_btn_text()
         main_page.set_btn_deactivate()
-        main_page.set_btn_activate()
+        # 토요일, 일요일에는
+        if datetime.datetime.today().weekday() != 3 and datetime.datetime.today().weekday() != 4:
+            main_page.set_btn_activate()
         main_page.set_label_text()
         main_page.set_user_status()
 

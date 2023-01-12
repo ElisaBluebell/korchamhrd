@@ -193,9 +193,15 @@
 #     print("--- %s seconds ---" % {time.time() - start_time})
 #     print("shared_number=", end=""), print(shared_number)
 #     print("end of main")
+#
+# from time import strftime, localtime
+#
+# tm = localtime
+# print(strftime('%I:%M'))
+# print(type(strftime('%I:%M')))
 
-from time import strftime, localtime
+import datetime
 
-tm = localtime
-print(strftime('%I:%M'))
-print(type(strftime('%I:%M')))
+days = ['월', '화', '수', '목', '금', '토', '일']
+print(datetime.datetime.today().weekday())
+

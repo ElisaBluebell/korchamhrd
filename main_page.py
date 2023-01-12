@@ -107,6 +107,11 @@ class MainPage(QWidget):
         self.attend_btn.clicked.connect(self.change_user_status)
         self.cut_off_btn.clicked.connect(self.cut_off)
 
+    def set_btn_text(self):
+        self.chat_btn.setText('상담')
+        self.log_out_btn.setText('로그아웃')
+        self.close_btn.setText('종료')
+
     def set_btn_activate(self):        # 유저가 출근 or 입실 전일 경우
         if self.user_info[10] == 0:
             self.attend_btn.setGeometry(60, 400, 80, 40)
@@ -134,10 +139,6 @@ class MainPage(QWidget):
         elif self.user_info[10] == 2:
             self.cut_off_btn.setGeometry(160, 400, 40, 40)
             self.cut_off_btn.setText('복귀')
-
-        self.chat_btn.setText('상담')
-        self.log_out_btn.setText('로그아웃')
-        self.close_btn.setText('종료')
 
     def set_btn_deactivate(self):
         self.attend_btn.setGeometry(0, 0, 0, 0)
@@ -239,6 +240,7 @@ class MainPage(QWidget):
         conn.close()
 
         self.set_db()
+        self.set_btn_text()
         self.set_btn_deactivate()
         self.set_btn_activate()
         self.set_label_text()
@@ -270,6 +272,7 @@ class MainPage(QWidget):
         conn.close()
 
         self.set_db()
+        self.set_btn_text
         self.set_btn_deactivate()
         self.set_btn_activate()
         self.set_label_text()
