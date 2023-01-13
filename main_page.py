@@ -88,8 +88,9 @@ class MainPage(QWidget):
             self.leave_time.setText(f'퇴실 시간 | {self.user_info[12]}')
 
             # 출결 여부도 함께 출력
-            self.attend_status.setText(f'출석 {None} 결석 {self.user_info[3]}, 지각 {self.user_info[4]}, '
-                                       f'조퇴 {self.user_info[5]}, 외출 {self.user_info[6]}')
+            self.attend_status.setText(f'출석 {self.user_info[18] - self.user_info[14] - self.user_info[3]} '
+                                       f'결석 {self.user_info[3]}, 지각 {self.user_info[4]}, 조퇴 {self.user_info[5]}, '
+                                       f'외출 {self.user_info[6]}')
 
         # 교사의 경우 출퇴근 시간만 출력
         else:
