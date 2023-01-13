@@ -163,8 +163,13 @@ class MainPage(QWidget):
 
     # 버튼 활성화 함수
     def set_btn_activate(self):
+        # 휴일 리스트 작성
+        holiday = ['2023-01-24', '2023-03-02', '2023-05-08']
+        # 금요일과 토요일 리스트
+        weekend = [5, 6]
         # 유저가 출근 또는 입실 전인 경우의 버튼 세팅
-        if self.user_info[8] == 0:
+        if self.user_info[8] == 0 and str(datetime.date.today()) not in holiday and \
+                datetime.date.today().weekday() not in weekend:
             self.attend_btn.setGeometry(60, 400, 80, 40)
 
             if self.user_info[0] < 200000:

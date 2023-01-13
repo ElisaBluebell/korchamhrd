@@ -2,7 +2,7 @@ import pymysql
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QIcon
-from PyQt5.QtWidgets import QComboBox, QLabel, QLineEdit, QListWidget, QPushButton, QWidget
+from PyQt5.QtWidgets import QComboBox, QLabel, QLineEdit, QListWidget, QPushButton, QWidget, QListWidgetItem
 
 
 class ChatWindow(QWidget):
@@ -81,7 +81,7 @@ class ChatWindow(QWidget):
             self.select_opponent_class.currentTextChanged.connect(self.change_selected_name)
 
             self.change_selected_name()
-            self.select_opponent_name.currentTextChanged.connect(self.open_chat)
+        self.select_opponent_name.currentTextChanged.connect(self.open_chat)
 
     def deactivate_ui(self):
         self.opponent_class.setText('')
@@ -127,24 +127,33 @@ class ChatWindow(QWidget):
         self.setWindowTitle('상담')
 
     def open_chat(self):
-        print(1)
         self.create_chat()
         # 학생
         # if self.user_info < 200000:
 
     def create_chat(self):
-        print(2)
         conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
         c = conn.cursor()
 
         if self.user_info[0] < 200000:
-            c.execute(f'''CREATE TABLE IF NOT EXISTS korchamhrd.`{self.select_opponent_name.currentText()}_{self.user_info[1]}` 
-            (sender TEXT NOT NULL, content TEXT NOT NULL, time TEXT NOT NULL, alarm INT NOT NULL)''')
+            c.execute(f'CREATE TABLE IF NOT EXISTS korchamhrd.`{self.select_opponent_name.currentText()}_'
+                      f'{self.user_info[1]}` (sender TEXT NOT NULL, content TEXT NOT NULL, time TEXT NOT NULL, '
+                      f'alarm INT NOT NULL)')
 
+        else:
+            if self.select_opponent_name.currentText() and self.select_opponent_name.currentText() != self.user_info[1]:
+                c.execute(f'CREATE TABLE IF NOT EXISTS korchamhrd.`{self.user_info[1]}_'
+                          f'{self.select_opponent_name.currentText()}` (sender TEXT NOT NULL, content TEXT NOT NULL, '
+                          f'time TEXT NOT NULL, alarm INT NOT NULL)')
 
+            else:
+                pass
 
     def send_message(self):
-        pass
+        self.read_message()
+
+    def read_message(self):
+        self.chat_list.addItem(QListWidgetItem('a'))
 
     def close_window(self):
         self.close()

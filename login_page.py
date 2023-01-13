@@ -31,6 +31,8 @@ class LoginPage(QWidget):
         self.log_in_count = 0
         # 출석부에서 사용할 DB 임시저장용 변수
         self.temp = ''
+        self.holiday2 = ['2023-03-02']
+        self.holiday4 = ['2023-01-24', '2023-05-08']
 
         # ui 설정
         self.window_title = QLabel('광주인력개발원', self)
@@ -115,8 +117,18 @@ class LoginPage(QWidget):
             pass
 
         else:
+            # 휴일이 있거나 요일별로 출석부를 긁어와야 하는 날짜가 달라 예외설정을 해줌 기본은 1(전날)
+            day_off = 1
+            # 하루 휴일이 존재할 경우 2 등 다르게 설정
+            if datetime.date.today() in self.holiday2:
+                day_off = 2
+            elif datetime.date.today() in self.holiday4:
+                day_off = 4
+            elif datetime.date.weekday(datetime.date.today()) == 5 or datetime.date.weekday(datetime.date.today()) == 6:
+                day_off = 3
+
             # 오늘자 테이블이 없을 경우 이전 출석부에서 내용을 긁어와서
-            c.execute(f'''SELECT * FROM korchamhrd.`{str(datetime.date.today() - datetime.timedelta(1))}`''')
+            c.execute(f'''SELECT * FROM korchamhrd.`{str(datetime.date.today() - datetime.timedelta(day_off))}`''')
             self.temp = list(c.fetchall())
 
             self.list_temp()
