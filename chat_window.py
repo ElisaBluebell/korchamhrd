@@ -72,18 +72,26 @@ class ChatWindow(QWidget):
         # 학생일 경우
         if self.user_info[0] < 200000:
             for i in range(len(self.chat_db)):
+                # 교수에 한해 이름을 체크박스에 추가함
                 if self.chat_db[i][2] == '교수':
                     self.select_opponent_name.addItem(self.chat_db[i][1])
+
         else:
+            # 수강과정 체크박스와 라벨 표시
             self.opponent_class.setText('수강과정')
             self.opponent_class.setGeometry(20, 60, 60, 20)
-
             self.select_opponent_class.setGeometry(100, 60, 240, 20)
+
+            # 수강과정명이 중복되지 않게 체크박스에 추가함
             for i in range(len(self.chat_db)):
                 if self.chat_db[i][2] not in temp and self.chat_db[i][3] == 1:
                     temp.append(self.chat_db[i][2])
                     self.select_opponent_class.addItem(self.chat_db[i][2])
+
+            # 수강과정명에 따라 체크박스에 이름을 넣는 함수 호출
             self.select_opponent_class.currentTextChanged.connect(self.change_selected_name)
+
+        # 대상명이 변경될 시 채팅창 호출
         self.select_opponent_name.currentTextChanged.connect(self.open_chat)
 
     def deactivate_ui(self):
@@ -98,6 +106,7 @@ class ChatWindow(QWidget):
     def change_selected_name(self):
         self.select_opponent_name.clear()
         for i in range(len(self.chat_db)):
+            # 대상의 수강과정이 체크박스에 선택된 과정과 같을 경우 체크박스에 추가함
             if self.chat_db[i][2] == self.select_opponent_class.currentText():
                 self.select_opponent_name.addItem(self.chat_db[i][1])
 
@@ -112,6 +121,7 @@ class ChatWindow(QWidget):
         c.close()
         conn.close()
 
+    # 쓰레드로 돌릴 채팅창 최신화
     def refresh_chat(self):
         while True:
             self.read_message()
@@ -138,11 +148,13 @@ class ChatWindow(QWidget):
         self.create_chat()
         self.read_message()
 
+    # 채팅창이 없을 경우 교수명_학생명으로 채팅 테이블 작성
     def create_chat(self):
         conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
         c = conn.cursor()
         if self.user_info[0] < 200000:
             self.chat_db_name = self.select_opponent_name.currentText() + '_' + self.user_info[1]
+            # 보낸이, 내용, 시간, 학생알림, 교수알림 값을 가짐
             c.execute(f'CREATE TABLE IF NOT EXISTS korchamhrd.`{self.chat_db_name}` (sender TEXT NOT NULL, '
                       f'content TEXT NOT NULL, time TEXT NOT NULL, studnet_alarm INT NOT NULL, '
                       f'teacher_alarm INT NOT NULL)')
@@ -161,7 +173,7 @@ class ChatWindow(QWidget):
         c = conn.cursor()
 
         c.execute(f'INSERT INTO korchamhrd.{self.chat_db_name} VALUES ("{self.user_info[1]}", '
-                  f'"{self.chat_input.text()}", "{datetime.datetime.now().time()}", 1)')
+                  f'"{self.chat_input.text()}", "{datetime.datetime.now().time()}", 1, 1)')
         conn.commit()
 
         c.close()
@@ -176,11 +188,18 @@ class ChatWindow(QWidget):
         conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
         c = conn.cursor()
 
-        c.execute(f'SELECT * FROM (SELECT * FROM korchamhrd.{self.chat_db_name} ORDER BY `time` DESC LIMIT 17) A ORDER BY `time` ASC')
+        # 가장 최신 채팅 17개를 가져옴
+        c.execute(f'SELECT * FROM (SELECT * FROM korchamhrd.{self.chat_db_name} ORDER BY `time` DESC LIMIT 17) '
+                  f'A ORDER BY `time` ASC')
         chat_content = c.fetchall()
+
+        # [시간] 발신자: 내용 의 형식으로 삽입
         for i in range(len(chat_content)):
             self.chat_list.addItem(QListWidgetItem(f'[{chat_content[i][2][:5]}] {chat_content[i][0]}: '
                                                    f'{chat_content[i][1]}'))
+
+        c.close()
+        conn.close()
 
     def close_window(self):
         print(self.select_opponent_name.currentText())
