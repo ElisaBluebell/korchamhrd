@@ -1,6 +1,8 @@
+import pymysql
+
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIcon, QFont
-from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QListWidget, QComboBox
+from PyQt5.QtGui import QFont, QIcon
+from PyQt5.QtWidgets import QComboBox, QLabel, QLineEdit, QListWidget, QPushButton, QWidget
 
 
 class ChatWindow(QWidget):
@@ -8,6 +10,7 @@ class ChatWindow(QWidget):
     def __init__(self, user_info):
         super().__init__()
         self.user_info = user_info
+        self.chat_db = []
 
         self.title = QLabel(self)
         self.opponent_class = QLabel(self)
@@ -24,6 +27,7 @@ class ChatWindow(QWidget):
         self.chat_list = QListWidget(self)
 
         self.set_ui()
+        self.set_db()
 
     def set_label(self):
         self.title.setText('일대일 상담')
@@ -66,7 +70,19 @@ class ChatWindow(QWidget):
         self.select_opponent_class.setGeometry(0, 0, 0, 0)
 
     def set_db(self):
-        pass
+        conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
+        c = conn.cursor()
+
+        c.execute('''SELECT a.id, a.user_name, b.class_name, b.class_status FROM korchamhrd.account_info AS a 
+        INNER JOIN korchamhrd.curriculum_db AS b ON a.curriculum_id=b.id''')
+        self.chat_db = list(c.fetchall())
+
+        c.close()
+        conn.close()
+
+    def refresh_ui(self):
+        self.deactivate_ui()
+        self.activate_ui()
 
     def set_ui(self):
         self.set_label()
@@ -74,6 +90,7 @@ class ChatWindow(QWidget):
         self.set_btn()
         self.set_list_widget()
         self.set_combo_box()
+        self.refresh_ui()
 
         self.setFont(QFont('D2Coding'))
         self.setGeometry(420, 120, 360, 540)
