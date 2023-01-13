@@ -350,6 +350,8 @@ class MainPage(QWidget):
             conn.commit()
 
             QMessageBox.information(self, '복귀', '복귀하였습니다.')
+            # 추가된 외출 횟수를 토대로 결석 판정
+            self.absence_increase()
 
         c.close()
         conn.close()
@@ -359,11 +361,14 @@ class MainPage(QWidget):
     def chat(self):
         pass
 
+    # 결석 판정기
     def absence_increase(self):
         conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
         c = conn.cursor()
 
+        # 지각, 조퇴, 외출의 합이 3의 배수일 때
         if (self.user_info[4] + self.user_info[5] + self.user_info[6]) % 3 == 0:
+            # 결석 1회 추가하고 DB에 적용함
             self.user_info[3] += 1
             c.execute(f'''UPDATE korchamhrd.`{str(datetime.date.today())}` 
             SET absence={self.user_info[3]}, absence_record=1 WHERE id={self.user_info[0]}''')
