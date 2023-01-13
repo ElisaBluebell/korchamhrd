@@ -115,7 +115,7 @@ class ChatWindow(QWidget):
     def refresh_chat(self):
         while True:
             self.read_message()
-            time.sleep(0.3)
+            time.sleep(0.5)
 
     def refresh_ui(self):
         self.deactivate_ui()
