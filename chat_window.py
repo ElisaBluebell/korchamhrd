@@ -144,12 +144,14 @@ class ChatWindow(QWidget):
         if self.user_info[0] < 200000:
             self.chat_db_name = self.select_opponent_name.currentText() + '_' + self.user_info[1]
             c.execute(f'CREATE TABLE IF NOT EXISTS korchamhrd.`{self.chat_db_name}` (sender TEXT NOT NULL, '
-                      f'content TEXT NOT NULL, time TEXT NOT NULL, alarm INT NOT NULL)')
+                      f'content TEXT NOT NULL, time TEXT NOT NULL, studnet_alarm INT NOT NULL, '
+                      f'teacher_alarm INT NOT NULL)')
 
         else:
             self.chat_db_name = self.user_info[1] + '_' + self.select_opponent_name.currentText()
             c.execute(f'CREATE TABLE IF NOT EXISTS korchamhrd.`{self.chat_db_name}` (sender TEXT NOT NULL, '
-                      f'content TEXT NOT NULL, time TEXT NOT NULL, alarm INT NOT NULL)')
+                      f'content TEXT NOT NULL, time TEXT NOT NULL, studnet_alarm INT NOT NULL, '
+                      f'teacher_alarm INT NOT NULL)')
 
         c.close()
         conn.close()
