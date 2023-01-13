@@ -113,6 +113,7 @@ class LoginPage(QWidget):
         # 오늘자 테이블이 이미 있을 경우 pass
         if self.temp:
             pass
+
         else:
             # 오늘자 테이블이 없을 경우 이전 출석부에서 내용을 긁어와서
             c.execute(f'''SELECT * FROM korchamhrd.`{str(datetime.date.today() - datetime.timedelta(1))}`''')

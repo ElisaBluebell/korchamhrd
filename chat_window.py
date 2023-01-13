@@ -31,9 +31,6 @@ class ChatWindow(QWidget):
         self.title.setGeometry(0, 20, 360, 30)
         self.title.setAlignment(Qt.AlignCenter)
 
-        self.opponent_class.setText('수강과정')
-        self.opponent_class.setGeometry(20, 60, 60, 20)
-
         self.opponent_name.setText('이름')
         self.opponent_name.setGeometry(20, 100, 60, 20)
 
@@ -53,7 +50,20 @@ class ChatWindow(QWidget):
         self.chat_list.setGeometry(20, 140, 320, 300)
 
     def set_combo_box(self):
+        self.select_opponent_name.setGeometry(80, 100, 240, 20)
+
+    def activate_ui(self):
+        self.opponent_class.setText('수강과정')
+        self.opponent_class.setGeometry(20, 60, 60, 20)
+
         self.select_opponent_class.setGeometry(80, 60, 240, 20)
+
+    def deactivate_ui(self):
+        self.opponent_class.setText('')
+        self.opponent_class.setGeometry(0, 0, 0, 0)
+
+        self.select_opponent_class.clear()
+        self.select_opponent_class.setGeometry(0, 0, 0, 0)
 
     def set_db(self):
         pass
