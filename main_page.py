@@ -40,7 +40,7 @@ class MainPage(QWidget):
 
         # 로그인 상태가 참인 DB의 행을 불러옴
         # DB 0=유저 고유번호, 1=이름, 2=메세지수신, 3=결석, 4=지각, 5=조퇴, 6=외출, 8=유저 상태, 9=수업 고유번호
-        # 10=입실 시간, 11=외출 시간, 12=퇴실 시간, 13=복귀 시간, 15=남은일수 16=수업명, 17=총 수업일수, 18=반 활성상태
+        # 10=입실 시간, 11=외출 시간, 12=퇴실 시간, 13=복귀 시간, 14=남은일수, 17=수업명, 18=총 수업일수, 19=반 활성상태
         c.execute(f'''SELECT * FROM korchamhrd.`{str(datetime.date.today())}` as a
          INNER JOIN curriculum_db  as b 
          on a.curriculum_id = b.id 
@@ -99,6 +99,41 @@ class MainPage(QWidget):
             self.leave_time.setText('')
             self.attend_status.setText('')
 
+    def set_user_status(self):
+        # 학생인 경우의 유저 상태
+        if self.user_info[0] < 200000:
+            if self.user_info[8] == 0:
+                self.user_status.setText('입실전')
+
+            elif self.user_info[8] == 1:
+                self.user_status.setText('입실')
+
+            elif self.user_info[8] == 2:
+                self.user_status.setText('외출')
+
+            else:
+                self.user_status.setText('퇴실')
+
+        else:
+            if self.user_info[8] == 0:
+                self.user_status.setText('출근전')
+
+            elif self.user_info[8] == 1:
+                self.user_status.setText('출근')
+
+            else:
+                self.user_status.setText('퇴근')
+
+    def set_user_curriculum(self):
+        # 수업명을 받아오는 변수 선언
+        user_curriculum = self.user_info[17]
+        # 15글자 이상인 경우
+        if len(user_curriculum) > 14:
+            # 12글자에서 잘라줘서 맨 아랫쪽에 보기 흉하게 한두글자 내려가는 것을 방지함
+            self.curriculum_title.setText(f'{user_curriculum[:12]}\n{user_curriculum[12:]}')
+        else:
+            self.curriculum_title.setText(user_curriculum)
+
     def set_btn(self):
         self.chat_btn.clicked.connect(self.chat)
         self.chat_btn.setGeometry(220, 400, 80, 40)
@@ -139,7 +174,7 @@ class MainPage(QWidget):
                 self.attend_btn.setText('퇴실')
 
                 # 복귀 시간이 기본값인 경우 외출 버튼 활성화
-                if self.user_info[13] == 'NULL':
+                if not self.user_info[13]:
                     self.cut_off_btn.setGeometry(160, 400, 40, 40)
                     self.cut_off_btn.setText('외출')
 
@@ -194,6 +229,12 @@ class MainPage(QWidget):
             # 받아온 날의 배경색을 채워줌
             self.calendar.setDateTextFormat(the_day, fill_date_background)
 
+    def schedule_management(self):
+        # schedule_board.py 파일의 ScheduleBoard 클래스에 유저 정보와 달력에서 선택한 날을 상속받는 객체를 생성하고
+        self.schedule_board = ScheduleBoard(self.user_info, self.calendar.selectedDate())
+        # 새 창 출력
+        self.schedule_board.show()
+
     def set_ui(self):
         self.set_label()
         self.set_label_text()
@@ -202,46 +243,14 @@ class MainPage(QWidget):
         # 기본 폰트 D2Coding
         self.setFont(QtGui.QFont('D2Coding'))
 
-    def schedule_management(self):
-        # schedule_board.py 파일의 ScheduleBoard 클래스에 유저 정보와 달력에서 선택한 날을 상속받는 객체를 생성하고
-        self.schedule_board = ScheduleBoard(self.user_info, self.calendar.selectedDate())
-        # 새 창 출력
-        self.schedule_board.show()
-
-    def set_user_status(self):
-        # 학생인 경우의 유저 상태
-        if self.user_info[0] < 200000:
-            if self.user_info[8] == 0:
-                self.user_status.setText('입실전')
-    
-            elif self.user_info[8] == 1:
-                self.user_status.setText('입실')
-    
-            elif self.user_info[8] == 2:
-                self.user_status.setText('외출')
-    
-            else:
-                self.user_status.setText('퇴실')
-
-        else:
-            if self.user_info[8] == 0:
-                self.user_status.setText('출근전')
-            
-            elif self.user_info[8] == 1:
-                self.user_status.setText('출근')
-                
-            else:
-                self.user_status.setText('퇴근')
-
-    def set_user_curriculum(self):
-        # 수업명을 받아오는 변수 선언
-        user_curriculum = self.user_info[16]
-        # 15글자 이상인 경우
-        if len(user_curriculum) > 14:
-            # 12글자에서 잘라줘서 맨 아랫쪽에 보기 흉하게 한두글자 내려가는 것을 방지함
-            self.curriculum_title.setText(f'{user_curriculum[:12]}\n{user_curriculum[12:]}')
-        else:
-            self.curriculum_title.setText(user_curriculum)
+    # DB와 UI 새로고침
+    def refresh_db_ui(self):
+        self.set_db()
+        self.set_btn_text()
+        self.set_btn_deactivate()
+        self.set_btn_activate()
+        self.set_label_text()
+        self.set_user_status()
 
     # 출결 상태 변경 함수
     def change_user_status(self):
@@ -252,42 +261,71 @@ class MainPage(QWidget):
         if self.user_info[8] == 0:
             # 유저 상태를 출석으로 변경하고
             self.user_info[8] = 1
-
-            # 출석부 DB상에 시간을 적고 상태 변경
+            # 출석부 DB상에 시간을 적고 상태 변경, 24시간은 H, 12시간은 I를 사용함
             c.execute(f'''UPDATE korchamhrd.`{str(datetime.date.today())}` SET user_status=1, 
-            attend_time="{strftime('%I:%M')}" WHERE id={self.user_info[0]}''')
+            attend_time="{strftime('%H:%M')}" WHERE id={self.user_info[0]}''')
             conn.commit()
 
+            # 입실 시간이 9시 20분 이후일 경우
+            if int(strftime('%H%M')) > 920:
+                # 지각 +1
+                self.user_info[4] += 1
+                # DB 적용
+                c.execute(f'''UPDATE korchamhrd.`{str(datetime.date.today())}` SET tardy={self.user_info[4]} 
+                WHERE id={self.user_info[0]}''')
+                conn.commit()
+
+                # 결석 판정
+                self.absence_increase()
+
             # 교수가 아닐 경우(교수의 과목 번호는 1) 입실, 교수의 경우 출근 메세지 출력
-            if self.user_info[9] != 1:
-                QMessageBox.information(self, '입실', '입실하였습니다.')
-            else:
-                QMessageBox.information(self, '출근', '출근하였습니다.')
+            self.attend_message('입실', '출근')
 
         # 입실 상태에서 해당 함수(입, 퇴실 버튼)가 호출된 경우
         elif self.user_info[8] == 1:
             # 상태를 퇴실에 해당하는 3으로 변경 및 DB 적용
             self.user_info[8] = 3
-
             c.execute(f'''UPDATE korchamhrd.`{str(datetime.date.today())}` SET user_status=3, 
-            leave_time="{strftime('%I:%M')}" WHERE id={self.user_info[0]}''')
+            leave_time="{strftime('%H:%M')}" WHERE id={self.user_info[0]}''')
             conn.commit()
 
-            if self.user_info[9] != 1:
-                QMessageBox.information(self, '퇴실', '퇴실하였습니다.')
-            else:
-                QMessageBox.information(self, '퇴근', '퇴근하였습니다.')
+            # 15시 50분 이전 퇴실했을 경우
+            if int(strftime('%H%M')) < 1550:
+                # 월요일과 금요일이 아니라면
+                if datetime.date.today().weekday() != 0 and datetime.date.today().weekday() != 4:
+                    # 16시 50분 이전 퇴실했을 경우
+                    if int(strftime('%H%M')) < 1650:
+                        # 조퇴 +1
+                        self.user_info[5] += 1
+                        c.execute(f'''UPDATE korchamhrd.`{str(datetime.date.today())}` 
+                        SET leave_early={self.user_info[5]} WHERE id={self.user_info[0]}''')
+                        conn.commit()
+
+                        self.absence_increase()
+
+                # 월요일과 금요일은 그냥 +1
+                else:
+                    self.user_info[5] += 1
+                    c.execute(f'''UPDATE korchamhrd.`{str(datetime.date.today())}` SET leave_early={self.user_info[5]} 
+                    WHERE id={self.user_info[0]}''')
+                    conn.commit()
+
+                    self.absence_increase()
+
+            self.attend_message('퇴실', '퇴근')
 
         c.close()
         conn.close()
 
         # 새로 바뀐 DB와 버튼, 라벨 등 새로고침
-        self.set_db()
-        self.set_btn_text()
-        self.set_btn_deactivate()
-        self.set_btn_activate()
-        self.set_label_text()
-        self.set_user_status()
+        self.refresh_db_ui()
+
+    # 출퇴근 메세지 출력 함수
+    def attend_message(self, student_str, teacher_str):
+        if self.user_info[9] != 1:
+            QMessageBox.information(self, student_str, student_str + '하였습니다.')
+        else:
+            QMessageBox.information(self, teacher_str, teacher_str + '하였습니다.')
 
     # 외출 함수
     def cut_off(self):
@@ -298,9 +336,8 @@ class MainPage(QWidget):
         if self.user_info[8] == 1:
             # 외출로 변경하고 외출 데이터를 DB에 작성
             self.user_info[8] = 2
-
             c.execute(f'''UPDATE korchamhrd.`{str(datetime.date.today())}` SET user_status=2, 
-            cut_time="{strftime('%I:%M')}" WHERE id={self.user_info[0]}''')
+            cut_time="{strftime('%H:%M')}" WHERE id={self.user_info[0]}''')
             conn.commit()
 
             QMessageBox.information(self, '외출', '외출하였습니다.')
@@ -308,9 +345,8 @@ class MainPage(QWidget):
         # 외출 상태에서 눌렀을 경우(복귀 버튼을 눌렀을 경우)
         elif self.user_info[8] == 2:
             self.user_info[8] = 1
-
             c.execute(f'''UPDATE korchamhrd.`{str(datetime.date.today())}` SET user_status=1, 
-            return_time="{strftime('%I:%M')}", period_cut={self.user_info[6] + 1} WHERE id={self.user_info[0]}''')
+            return_time="{strftime('%H:%M')}", period_cut={self.user_info[6] + 1} WHERE id={self.user_info[0]}''')
             conn.commit()
 
             QMessageBox.information(self, '복귀', '복귀하였습니다.')
@@ -318,15 +354,23 @@ class MainPage(QWidget):
         c.close()
         conn.close()
 
-        self.set_db()
-        self.set_btn_text()
-        self.set_btn_deactivate()
-        self.set_btn_activate()
-        self.set_label_text()
-        self.set_user_status()
+        self.refresh_db_ui()
 
     def chat(self):
         pass
+
+    def absence_increase(self):
+        conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
+        c = conn.cursor()
+
+        if (self.user_info[4] + self.user_info[5] + self.user_info[6]) % 3 == 0:
+            self.user_info[3] += 1
+            c.execute(f'''UPDATE korchamhrd.`{str(datetime.date.today())}` 
+            SET absence={self.user_info[3]}, absence_record=1 WHERE id={self.user_info[0]}''')
+            conn.commit()
+
+        c.close()
+        conn.close()
 
     def log_out(self):
         reply = QMessageBox.question(self, '로그아웃', '로그아웃 하시겠습니까?', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)

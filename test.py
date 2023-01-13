@@ -202,11 +202,11 @@
 import datetime
 
 # print(datetime.datetime.today().weekday())
-print(datetime.datetime.today() - datetime.timedelta(1))
-print(datetime.date.today() - datetime.timedelta(2))
-# print(datetime.datetime.now())
+# print(datetime.datetime.today() - datetime.timedelta(1))
+# print(datetime.date.today() - datetime.timedelta(2))
+print(datetime.datetime.now())
 # today = datetime.date.today()
 # target_date = datetime.date(2023, 5, 24)
 # holiday = [datetime.date(2023, 1, 22), datetime.date(2023, 1, 21)]
 # print(datetime.date.weekday() in (target_date - today))
-print(str(datetime.date.today()))
+# print(str(datetime.date.today()))

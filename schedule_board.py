@@ -96,7 +96,7 @@ class ScheduleBoard(QWidget):
 
         # 학생일 경우 본인의 정보만 콤보박스에서 선택이 가능
         if self.user_info[0] < 200000:
-            self.select_student_class.addItem(self.user_info[16])
+            self.select_student_class.addItem(self.user_info[17])
             self.select_student_name.addItem(self.user_info[1])
 
         # 교사인 경우 curriculum_db에서 현재 활성화된 모든 수업의 정보를 받아와서 콤보박스에 추가

@@ -2,10 +2,11 @@
 # 스키마는 korchamhrd, 테이블명은 문자열 YYYY-MM-DD 형식
 # 유저 id값 INT NOT NULL, 유저명 TEXT NOT NULL, 메세지 수신여부 INT NOT NULL(0 또는 1로 참, 거짓), 결석횟수 INT NOT NULL,
 # 지각횟수 INT NOT NULL, 조퇴횟수 INT NOT NULL, 외출횟수 INT NOT NULL, 로그인상태 INT NOT NULL(0 또는 1),
-# 유저 상태 INT NOT NULL(0=입실전, 1=입실, 2=외출 3=퇴실후), 수업 id값 INT NOT NULL, 출석시간 TEXT(HH:MM),
-# 외출시간 TEXT(이하 동일), 퇴실시간 TEXT, 외출복귀시간 TEXT, 남은 수업일자 INT NOT NULL, PRIMARY KEY는 (id값))
+# 유저 상태 INT NOT NULL(0=입실전, 1=입실, 2=외출 3=퇴실후), 수업 id값 INT NOT NULL, 출석시간 TEXT(HH:MM, 이하 동일) NULL,
+# 외출시간 TEXT NULL, 퇴실시간 TEXT NULL, 외출복귀시간 TEXT NULL, 남은 수업일자 INT NOT NULL,
+# absence_record INT NOT NULL, PRIMARY KEY는 (id값))
 
-# 계정 정보 테이블은 유저 id값, 유저 id, 유저 pw를 가져야 함
+# account_info(계정 정보) 테이블은 유저 id값, 유저 id, 유저 pw를 가짐
 
 import datetime
 import pymysql
@@ -107,7 +108,7 @@ class LoginPage(QWidget):
         user_name TEXT NOT NULL, message_reception INT NOT NULL, absence INT NOT NULL, tardy INT NOT NULL, 
         leave_early INT NOT NULL, period_cut INT NOT NULL, login_status INT NOT NULL, user_status INT NOT NULL, 
         curriculum_id INT NOT NULL, attend_time TEXT, cut_time TEXT, leave_time TEXT, return_time TEXT, 
-        day_left INT NOT NULL, PRIMARY KEY (id))''')
+        day_left INT NOT NULL, absence_record INT NOT NULL, PRIMARY KEY (id))''')
 
         # 오늘자 테이블이 이미 있을 경우 pass
         if self.temp:
@@ -125,7 +126,7 @@ class LoginPage(QWidget):
             for i in range(len(self.temp)):
                 c.execute(f'''INSERT INTO korchamhrd.`{str(datetime.date.today())}` VALUES ({self.temp[i][0]}, 
                 "{self.temp[i][1]}", {self.temp[i][2]}, {self.temp[i][3]}, {self.temp[i][4]}, {self.temp[i][5]}, 
-                {self.temp[i][6]}, 0, 0, {self.temp[i][9]}, "NULL", "NULL", "NULL", "NULL", {self.temp[i][14] - 1})''')
+                {self.temp[i][6]}, 0, 0, {self.temp[i][9]}, null, null, null, null, {self.temp[i][14] - 1}, 0)''')
                 conn.commit()
 
         c.close()
@@ -142,124 +143,99 @@ class LoginPage(QWidget):
             for j in range(10, 14):
                 # 값이 존재할 경우
                 if self.temp[i][j]:
-                    # :을 제외하고 이어붙여 숫자 형태로 변환함
-                    self.temp[i][j] = int(self.temp[i][j][:2] + self.temp[i][j][3:])
+                    # :을 제외하고 이어붙여 숫자 형태로 변환하여 시간*60+분
+                    self.temp[i][j] = (((int(self.temp[i][j][:2])) * 60) + int(self.temp[i][j][3:]))
 
     # 출석 파괴자
     def attendance_checker(self):
         for i in range(len(self.temp)):
-            # 출석 시간이 없는 경우
-            if not self.temp[i][10]:
-                # 결석 횟수 1회 증가
-                self.temp[i][3] += 1
-
-            # (이후 결석 조건) 퇴실 시간이 없는 경우
-            elif not self.temp[i][12]:
-                self.temp[i][3] += 1
-
-            # 출석 시간이 12시 35분(월요일, 금요일 중간시간)보다 늦은 경우
-            elif self.temp[i][10] > 1235:
-                # 월요일과 목요일이 아니라면
-                if datetime.date.today().weekday() != 0 and datetime.date.today().weekday() != 4:
-                    # 13시 5분보다 늦은 경우
-                    if self.temp[i][10] > 1305:
-                        self.temp[i][3] += 1
-                else:
+            # 전날 지각 조퇴 외출 등으로 결석이 추가되지 않았을 경우에
+            if self.temp[i][15] == 0:
+                # 출석 시간이 없는 경우
+                if not self.temp[i][10]:
+                    # 결석 횟수 1회 증가
                     self.temp[i][3] += 1
 
-            # 퇴실 시간이 12시 35분보다 빠른 경우
-            elif self.temp[i][12] < 1235:
-                if datetime.date.today().weekday() != 0 and datetime.date.today().weekday() != 4:
-                    if self.temp[i][12] < 1305:
-                        self.temp[i][3] += 1
-                else:
+                # (이후 결석 조건) 퇴실 시간이 없는 경우
+                elif not self.temp[i][12]:
                     self.temp[i][3] += 1
 
-            # 외출 했을 때
-            elif self.temp[i][12]:
-                # 외출 복귀 시간이 없는 경우
-                if not self.temp[i][13]:
-                    self.temp[i][3] += 1
-
-                # 9시 20분 이전에 입실했을 때
-                elif self.temp[i][10] < 920:
+                # 출석 시간이 12시 35분(월요일, 금요일 중간시간, 12:35 -> (12시*60) + 35분 = 755)보다 늦은 경우
+                elif self.temp[i][10] > 755:
+                    # 월요일과 목요일이 아니라면
                     if datetime.date.today().weekday() != 0 and datetime.date.today().weekday() != 4:
-                        # 16시 50분 이후 퇴실했는데
-                        if self.temp[i][12] > 1650:
-                            # ((외출 시간 - 9시 20분) + (16시 50분 - 복귀 시간))보다 (복귀 시간 - 외출 시간)이 크다면,
-                            # 즉 외출 시간이 수업 시간보다 길다면
-                            if ((self.temp[i][11] - 920) + (1650 - self.temp[i][13])) < (self.temp[i][13] -
-                                                                                         self.temp[i][11]):
-                                self.temp[i][3] += 1
-
-                        # 16시 50분 이전에 퇴실한 경우 외출 시간이 수업시간보다 길다면
-                        else:
-                            if ((self.temp[i][11] - 920) + (self.temp[i][12] - self.temp[i][13])) < (self.temp[i][13] -
-                                                                                                     self.temp[i][11]):
-                                self.temp[i][3] += 1
-
-                    # 월요일 or 금요일인 경우
-                    else:
-                        if self.temp[i][12] > 1550:
-                            if ((self.temp[i][11] - 920) + (1550 - self.temp[i][13])) < (self.temp[i][13] -
-                                                                                         self.temp[i][11]):
-                                self.temp[i][3] += 1
-
-                        else:
-                            if ((self.temp[i][11] - 920) + (self.temp[i][12] - self.temp[i][13])) < (self.temp[i][13] -
-                                                                                                     self.temp[i][11]):
-                                self.temp[i][3] += 1
-
-                # 9시 20분 이후 입실한 경우
-                else:
-                    if datetime.date.today().weekday() != 0 and datetime.date.today().weekday() != 4:
-                        if self.temp[i][12] > 1650:
-                            if ((self.temp[i][11] - self.temp[i][10]) + (1650 - self.temp[i][13])) < \
-                                    (self.temp[i][13] - self.temp[i][11]):
-                                self.temp[i][3] += 1
-
-                        else:
-                            if ((self.temp[i][11] - self.temp[i][10]) + (self.temp[i][12] - self.temp[i][13])) < \
-                                    (self.temp[i][13] - self.temp[i][11]):
-                                self.temp[i][3] += 1
-
-                    else:
-                        if self.temp[i][12] > 1550:
-                            if ((self.temp[i][11] - self.temp[i][10]) + (1550 - self.temp[i][13])) < \
-                                    (self.temp[i][13] - self.temp[i][11]):
-                                self.temp[i][3] += 1
-
-                        else:
-                            if ((self.temp[i][11] - self.temp[i][10]) + (self.temp[i][12] - self.temp[i][13])) < \
-                                    (self.temp[i][13] - self.temp[i][11]):
-                                self.temp[i][3] += 1
-
-            # 위의 결석 조건들에 속하지 않으면서 9시 20분 이후 출석했을 경우
-            elif self.temp[i][10] > 920:
-                # 지각 +1
-                self.temp[i][4] += 1
-                # 지각과 조퇴의 합이 3의 배수일 경우
-                if self.temp[i][4] + self.temp[i][5] % 3 == 0:
-                    # 결석 + 1
-                    self.temp[i][3] += 1
-
-            # 15시 50분 이전 퇴실했을 경우
-            elif self.temp[i][12] < 1550:
-                # 월요일과 금요일이 아니라면
-                if datetime.date.today().weekday() != 0 and datetime.date.today().weekday() != 4:
-                    # 16시 50분 이전 퇴실했을 경우
-                    if self.temp[i][12] < 1650:
-                        # 조퇴 +1
-                        self.temp[i][5] += 1
-                        if self.temp[i][4] + self.temp[i][5] % 3 == 0:
+                        # 13시 5분보다 늦은 경우
+                        if self.temp[i][10] > 785:
                             self.temp[i][3] += 1
-
-                # 월요일과 금요일은 그냥 +1
-                else:
-                    self.temp[i][5] += 1
-                    if self.temp[i][4] + self.temp[i][5] % 3 == 0:
+                    else:
                         self.temp[i][3] += 1
-                        # 출석은 다른 로직으로 구해서 없음
+
+                # 퇴실 시간이 12시 35분보다 빠른 경우
+                elif self.temp[i][12] < 755:
+                    if datetime.date.today().weekday() != 0 and datetime.date.today().weekday() != 4:
+                        if self.temp[i][12] < 785:
+                            self.temp[i][3] += 1
+                    else:
+                        self.temp[i][3] += 1
+
+                # 외출 했을 때
+                elif self.temp[i][12]:
+                    # 외출 복귀 시간이 없는 경우
+                    if not self.temp[i][13]:
+                        self.temp[i][3] += 1
+
+                    # 9시 20분 이전에 입실했을 때
+                    elif self.temp[i][10] < 560:
+                        if datetime.date.today().weekday() != 0 and datetime.date.today().weekday() != 4:
+                            # 16시 50분 이후 퇴실했는데
+                            if self.temp[i][12] > 1010:
+                                # ((외출 시간 - 9시 20분) + (16시 50분 - 복귀 시간))보다 (복귀 시간 - 외출 시간)이 크다면,
+                                # 즉 외출 시간이 수업 시간보다 길다면
+                                if ((self.temp[i][11] - 560) + (1010 - self.temp[i][13])) < (self.temp[i][13] -
+                                                                                             self.temp[i][11]):
+                                    self.temp[i][3] += 1
+
+                            # 16시 50분 이전에 퇴실한 경우 외출 시간이 수업시간보다 길다면
+                            else:
+                                if ((self.temp[i][11] - 560) + (self.temp[i][12] - self.temp[i][13])) < (self.temp[i][13] -
+                                                                                                         self.temp[i][11]):
+                                    self.temp[i][3] += 1
+
+                        # 월요일 or 금요일인 경우
+                        else:
+                            if self.temp[i][12] > 950:
+                                if ((self.temp[i][11] - 560) + (950 - self.temp[i][13])) < (self.temp[i][13] -
+                                                                                             self.temp[i][11]):
+                                    self.temp[i][3] += 1
+
+                            else:
+                                if ((self.temp[i][11] - 560) + (self.temp[i][12] - self.temp[i][13])) < (self.temp[i][13] -
+                                                                                                         self.temp[i][11]):
+                                    self.temp[i][3] += 1
+
+                    # 9시 20분 이후 입실한 경우
+                    else:
+                        if datetime.date.today().weekday() != 0 and datetime.date.today().weekday() != 4:
+                            if self.temp[i][12] > 1010:
+                                if ((self.temp[i][11] - self.temp[i][10]) + (1010 - self.temp[i][13])) < \
+                                        (self.temp[i][13] - self.temp[i][11]):
+                                    self.temp[i][3] += 1
+
+                            else:
+                                if ((self.temp[i][11] - self.temp[i][10]) + (self.temp[i][12] - self.temp[i][13])) < \
+                                        (self.temp[i][13] - self.temp[i][11]):
+                                    self.temp[i][3] += 1
+
+                        else:
+                            if self.temp[i][12] > 950:
+                                if ((self.temp[i][11] - self.temp[i][10]) + (950 - self.temp[i][13])) < \
+                                        (self.temp[i][13] - self.temp[i][11]):
+                                    self.temp[i][3] += 1
+
+                            else:
+                                if ((self.temp[i][11] - self.temp[i][10]) + (self.temp[i][12] - self.temp[i][13])) < \
+                                        (self.temp[i][13] - self.temp[i][11]):
+                                    self.temp[i][3] += 1
 
     # 아이디 입력 라인에딧을 통해 로그인할 경우 커서를 기준점인 비밀번호 입력 라인에딧으로 커서를 보냄
     def login_process_from_id_input(self):
