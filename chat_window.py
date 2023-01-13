@@ -29,6 +29,8 @@ class ChatWindow(QWidget):
         self.set_ui()
         self.set_db()
 
+        self.refresh_ui()
+
     def set_label(self):
         self.title.setText('일대일 상담')
         self.title.setFont(QFont('D2Coding', 20))
@@ -54,27 +56,54 @@ class ChatWindow(QWidget):
         self.chat_list.setGeometry(20, 140, 320, 300)
 
     def set_combo_box(self):
-        self.select_opponent_name.setGeometry(80, 100, 240, 20)
+        self.select_opponent_name.setGeometry(100, 100, 240, 20)
 
     def activate_ui(self):
-        self.opponent_class.setText('수강과정')
-        self.opponent_class.setGeometry(20, 60, 60, 20)
+        temp = []
+        # 학생일 경우
+        if self.user_info[0] < 200000:
+            for i in range(len(self.chat_db)):
+                if self.chat_db[i][2] == '교수':
+                    self.select_opponent_name.addItem(self.chat_db[i][1])
+        else:
+            self.opponent_class.setText('수강과정')
+            self.opponent_class.setGeometry(20, 60, 60, 20)
 
-        self.select_opponent_class.setGeometry(80, 60, 240, 20)
+            self.select_opponent_class.setGeometry(100, 60, 240, 20)
+            for i in range(len(self.chat_db)):
+                print(1)
+                if self.chat_db[i][2] not in temp and self.chat_db[i][3] == 1:
+                    print(2)
+                    temp.append(self.chat_db[i][2])
+                    print(3)
+                    self.select_opponent_class.addItem(self.chat_db[i][2])
+                    print(4)
+            self.select_opponent_class.currentTextChanged.connect(self.change_selected_name)
+
+            self.change_selected_name()
+            self.select_opponent_name.currentTextChanged.connect(self.open_chat)
 
     def deactivate_ui(self):
         self.opponent_class.setText('')
         self.opponent_class.setGeometry(0, 0, 0, 0)
 
+        self.select_opponent_name.clear()
+
         self.select_opponent_class.clear()
         self.select_opponent_class.setGeometry(0, 0, 0, 0)
+
+    def change_selected_name(self):
+        self.select_opponent_name.clear()
+        for i in range(len(self.chat_db)):
+            if self.chat_db[i][2] == self.select_opponent_class.currentText():
+                self.select_opponent_name.addItem(self.chat_db[i][1])
 
     def set_db(self):
         conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
         c = conn.cursor()
 
         c.execute('''SELECT a.id, a.user_name, b.class_name, b.class_status FROM korchamhrd.account_info AS a 
-        INNER JOIN korchamhrd.curriculum_db AS b ON a.curriculum_id=b.id''')
+        INNER JOIN korchamhrd.curriculum_db AS b ON a.curriculum_id=b.id ORDER BY b.id''')
         self.chat_db = list(c.fetchall())
 
         c.close()
@@ -96,6 +125,23 @@ class ChatWindow(QWidget):
         self.setGeometry(420, 120, 360, 540)
         self.setWindowIcon(QIcon('image/logo.png'))
         self.setWindowTitle('상담')
+
+    def open_chat(self):
+        print(1)
+        self.create_chat()
+        # 학생
+        # if self.user_info < 200000:
+
+    def create_chat(self):
+        print(2)
+        conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
+        c = conn.cursor()
+
+        if self.user_info[0] < 200000:
+            c.execute(f'''CREATE TABLE IF NOT EXISTS korchamhrd.`{self.select_opponent_name.currentText()}_{self.user_info[1]}` 
+            (sender TEXT NOT NULL, content TEXT NOT NULL, time TEXT NOT NULL, alarm INT NOT NULL)''')
+
+
 
     def send_message(self):
         pass
