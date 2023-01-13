@@ -193,7 +193,6 @@ class ScheduleBoard(QWidget):
         fill_date_background = QTextCharFormat()
         fill_date_background.setBackground(Qt.yellow)
 
-        # 데이터 삭제시마다 노란색 배경을 제거할 수 있게끔 일정이 존재하지 않는 부분은 하얀 배경을 가지게 설정
         clear_date_background = QTextCharFormat()
         clear_date_background.setBackground(Qt.white)
 
@@ -202,7 +201,6 @@ class ScheduleBoard(QWidget):
         conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
         c = conn.cursor()
 
-        # 일정 삭제 상태가 참인 일정(프로그램 상 삭제했으나 DB에는 남아있는 일정)의 데이터를 가져와서
         c.execute('''SELECT DISTINCT DATE_FORMAT(the_day, "%Y-%m-%d") FROM korchamhrd.schedule_db 
         WHERE schedule_deleted = 1 ORDER BY the_day''')
         temp1 = list(c.fetchall())
@@ -212,13 +210,10 @@ class ScheduleBoard(QWidget):
 
         for date in scheduled_day:
             the_day = QDate.fromString(date, "yyyy-MM-dd")
-            # 해당 날 배경색을 하얀 색으로 되돌림
             self.calendar.setDateTextFormat(the_day, clear_date_background)
 
-        # 이후 날짜 저장 리스트 초기화
         scheduled_day = []
 
-        # 삭제처리 되지 않은 날짜 데이터를 받아와서
         c.execute('''SELECT DISTINCT DATE_FORMAT(the_day, "%Y-%m-%d") FROM korchamhrd.schedule_db 
         WHERE schedule_deleted = 0 ORDER BY the_day''')
         temp2 = list(c.fetchall())
@@ -226,7 +221,6 @@ class ScheduleBoard(QWidget):
         c.close()
         conn.close()
 
-        # 초기화한 저장용 리스트에 삽입 및 색칠
         for i in range(len(temp2)):
             scheduled_day.append(temp2[i][0])
 

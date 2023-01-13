@@ -1,13 +1,14 @@
 import datetime
 import threading
+import time
 
 import pymysql
-import time
 
 from PyQt5 import QtGui
 from PyQt5.QtCore import QDate, Qt
 from PyQt5.QtGui import QTextCharFormat
 from PyQt5.QtWidgets import QCalendarWidget, QLabel, QMessageBox, QPushButton, QWidget
+from threading import Thread
 from time import strftime
 
 from schedule_board import ScheduleBoard
@@ -17,7 +18,7 @@ class MainPage(QWidget):
 
     def __init__(self):
         super().__init__()
-        th1 = threading.Thread(target=self.refresh_calendar, daemon=True)
+        th1 = threading.Thread(target=self.refresh_calendar)
         self.user_info = []
         self.schedule_board = 0
 
@@ -210,31 +211,7 @@ class MainPage(QWidget):
         fill_date_background = QTextCharFormat()
         # 해당 변수 배경을 노란색으로
         fill_date_background.setBackground(Qt.yellow)
-
-        # 데이터 삭제시마다 노란색 배경을 제거할 수 있게끔 일정이 존재하지 않는 부분은 하얀 배경을 가지게 설정
-        clear_date_background = QTextCharFormat()
-        clear_date_background.setBackground(Qt.white)
-
         # 스케줄이 있는 날짜를 담아줄 리스트 선언
-        scheduled_day = []
-
-        conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
-        c = conn.cursor()
-
-        # 일정 삭제 상태가 참인 일정(프로그램 상 삭제했으나 DB에는 남아있는 일정)의 데이터를 가져와서
-        c.execute('''SELECT DISTINCT DATE_FORMAT(the_day, "%Y-%m-%d") FROM korchamhrd.schedule_db 
-        WHERE schedule_deleted = 1 ORDER BY the_day''')
-        temp1 = list(c.fetchall())
-
-        for i in range(len(temp1)):
-            scheduled_day.append(temp1[i][0])
-
-        for date in scheduled_day:
-            the_day = QDate.fromString(date, "yyyy-MM-dd")
-            # 해당 날 배경색을 하얀 색으로 되돌림
-            self.calendar.setDateTextFormat(the_day, clear_date_background)
-
-        # 스케줄 초기화
         scheduled_day = []
 
         conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
@@ -259,12 +236,11 @@ class MainPage(QWidget):
             # 받아온 날의 배경색을 채워줌
             self.calendar.setDateTextFormat(the_day, fill_date_background)
 
-    # 캘린더 새로고침
     def refresh_calendar(self):
-        # 캘린더 텍스트 배경색 설정을 매 초마다 무한반복
         while True:
             self.set_calendar_background()
-            time.sleep(1)
+            print(1)
+            time.sleep(10)
 
     def schedule_management(self):
         # schedule_board.py 파일의 ScheduleBoard 클래스에 유저 정보와 달력에서 선택한 날을 상속받는 객체를 생성하고
@@ -357,6 +333,13 @@ class MainPage(QWidget):
         # 새로 바뀐 DB와 버튼, 라벨 등 새로고침
         self.refresh_db_ui()
 
+    # 출퇴근 메세지 출력 함수
+    def attend_message(self, student_str, teacher_str):
+        if self.user_info[9] != 1:
+            QMessageBox.information(self, student_str, student_str + '하였습니다.')
+        else:
+            QMessageBox.information(self, teacher_str, teacher_str + '하였습니다.')
+
     # 외출 함수
     def cut_off(self):
         conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
@@ -388,13 +371,6 @@ class MainPage(QWidget):
 
         self.refresh_db_ui()
 
-    # 출퇴근 메세지 출력 함수
-    def attend_message(self, student_str, teacher_str):
-        if self.user_info[9] != 1:
-            QMessageBox.information(self, student_str, student_str + '하였습니다.')
-        else:
-            QMessageBox.information(self, teacher_str, teacher_str + '하였습니다.')
-            
     def chat(self):
         pass
 
