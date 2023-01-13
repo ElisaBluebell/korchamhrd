@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import QCalendarWidget, QLabel, QMessageBox, QPushButton, Q
 from time import strftime
 
 from schedule_board import ScheduleBoard
+from chat_window import ChatWindow
 
 
 class MainPage(QWidget):
@@ -20,6 +21,7 @@ class MainPage(QWidget):
         th1 = threading.Thread(target=self.refresh_calendar, daemon=True)
         self.user_info = []
         self.schedule_board = 0
+        self.chat_window = 0
 
         self.user_status = QLabel(self)
         self.curriculum_title = QLabel(self)
@@ -396,7 +398,8 @@ class MainPage(QWidget):
             QMessageBox.information(self, teacher_str, teacher_str + '하였습니다.')
             
     def chat(self):
-        pass
+        self.chat_window = ChatWindow(self.user_info)
+        self.chat_window.show()
 
     # 결석 판정기
     def absence_increase(self):
