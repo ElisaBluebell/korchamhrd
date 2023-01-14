@@ -93,6 +93,13 @@ class LoginPage(QWidget):
         self.setFont(QtGui.QFont('D2Coding'))
 
     def set_attendance(self):
+        # 휴일 로그인시 진행도 차감을 방지하기 위해
+        curriculum_left = 1
+        if datetime.date.today().weekday() == 5 or datetime.date.today().weekday() == 6:
+            curriculum_left = 0
+        elif str(datetime.date.today()) in self.holiday4 or str(datetime.date.today()) in self.holiday2:
+            curriculum_left = 0
+
         # 커서 세팅
         conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
         c = conn.cursor()
@@ -104,32 +111,35 @@ class LoginPage(QWidget):
         except:
             pass
 
-        # 테이블이 만들어져있지 않을 경우 <오늘>을 이름으로 하는 출석부 테이블을 작성함
-        # 기존에 작성했던 user_account 테이블에서 로그인에만 필요한 id와 pw를 제외하고 만들어줌
-        c.execute(f'''CREATE TABLE IF NOT EXISTS korchamhrd.`{str(datetime.date.today())}` (id INT NOT NULL, 
-        user_name TEXT NOT NULL, message_reception INT NOT NULL, absence INT NOT NULL, tardy INT NOT NULL, 
-        leave_early INT NOT NULL, period_cut INT NOT NULL, login_status INT NOT NULL, user_status INT NOT NULL, 
-        curriculum_id INT NOT NULL, attend_time TEXT, cut_time TEXT, leave_time TEXT, return_time TEXT, 
-        day_left INT NOT NULL, absence_record INT NOT NULL, PRIMARY KEY (id))''')
-
         # 오늘자 테이블이 이미 있을 경우 pass
         if self.temp:
             pass
 
         else:
+            # 테이블이 만들어져있지 않을 경우 <오늘>을 이름으로 하는 출석부 테이블을 작성함
+            # 기존에 작성했던 user_account 테이블에서 로그인에만 필요한 id와 pw를 제외하고 만들어줌
+            c.execute(f'''CREATE TABLE IF NOT EXISTS korchamhrd.`{str(datetime.date.today())}` (id INT NOT NULL, 
+            user_name TEXT NOT NULL, message_reception INT NOT NULL, absence INT NOT NULL, tardy INT NOT NULL, 
+            leave_early INT NOT NULL, period_cut INT NOT NULL, login_status INT NOT NULL, user_status INT NOT NULL, 
+            curriculum_id INT NOT NULL, attend_time TEXT, cut_time TEXT, leave_time TEXT, return_time TEXT, 
+            day_left INT NOT NULL, absence_record INT NOT NULL, PRIMARY KEY (id))''')
+
             # 휴일이 있거나 요일별로 출석부를 긁어와야 하는 날짜가 달라 예외설정을 해줌 기본은 1(전날)
             day_off = 1
             # 하루 휴일이 존재할 경우 2 등 다르게 설정
-            if datetime.date.today() in self.holiday2:
-                day_off = 2
-            elif datetime.date.today() in self.holiday4:
+            if str(datetime.date.today()) in self.holiday4:
                 day_off = 4
-            elif datetime.date.weekday(datetime.date.today()) == 5 or datetime.date.weekday(datetime.date.today()) == 6:
+            elif datetime.date.today().weekday() == 6 or str(datetime.date.today()) in self.holiday2:
+                day_off = 2
+            elif datetime.date.weekday(datetime.date.today()) == 0:
                 day_off = 3
+            elif datetime.date.today().weekday() == 5:
+                day_off = 1
 
             # 오늘자 테이블이 없을 경우 이전 출석부에서 내용을 긁어와서
             c.execute(f'''SELECT * FROM korchamhrd.`{str(datetime.date.today() - datetime.timedelta(day_off))}`''')
             self.temp = list(c.fetchall())
+            print(str(datetime.date.today() - datetime.timedelta(day_off)))
 
             self.list_temp()
             self.string_to_int()
@@ -139,7 +149,7 @@ class LoginPage(QWidget):
             for i in range(len(self.temp)):
                 c.execute(f'''INSERT INTO korchamhrd.`{str(datetime.date.today())}` VALUES ({self.temp[i][0]}, 
                 "{self.temp[i][1]}", {self.temp[i][2]}, {self.temp[i][3]}, {self.temp[i][4]}, {self.temp[i][5]}, 
-                {self.temp[i][6]}, 0, 0, {self.temp[i][9]}, null, null, null, null, {self.temp[i][14] - 1}, 0)''')
+                {self.temp[i][6]}, 0, 0, {self.temp[i][9]}, null, null, null, null, {self.temp[i][14] - curriculum_left}, 0)''')
                 conn.commit()
 
         c.close()
@@ -317,6 +327,7 @@ class LoginPage(QWidget):
             self.focusPreviousChild()
 
     def log_in(self):
+
         conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='korchamhrd')
         c = conn.cursor()
 
