@@ -190,15 +190,12 @@ class ChatWindow(QWidget):
         conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
         c = conn.cursor()
 
-        print(self.user_info[0])
         if self.user_info[0] < 200000:
             c.execute(f'UPDATE korchamhrd.`{self.chat_db_name}` SET "student_alarm"=0')
             conn.commit()
-            print(self.chat_db_name)
         else:
             c.execute(f'UPDATE korchamhrd.{self.chat_db_name} SET teacher_alarm=0')
             conn.commit()
-            print(self.chat_db_name)
 
         # 가장 최신 채팅 17개를 가져옴
         c.execute(f'SELECT * FROM (SELECT * FROM korchamhrd.{self.chat_db_name} ORDER BY `time` DESC LIMIT 17) '
@@ -214,5 +211,4 @@ class ChatWindow(QWidget):
         conn.close()
 
     def close_window(self):
-        print(self.select_opponent_name.currentText())
         self.close()

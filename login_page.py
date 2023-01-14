@@ -141,7 +141,6 @@ class LoginPage(QWidget):
             # 오늘자 테이블이 없을 경우 이전 출석부에서 내용을 긁어와서
             c.execute(f'''SELECT * FROM korchamhrd.`{str(datetime.date.today() - datetime.timedelta(day_off))}`''')
             self.temp = list(c.fetchall())
-            print(str(datetime.date.today() - datetime.timedelta(day_off)))
 
             self.list_temp()
             self.string_to_int()
