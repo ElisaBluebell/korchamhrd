@@ -12,8 +12,8 @@ from PyQt5.QtGui import QTextCharFormat
 from PyQt5.QtWidgets import QCalendarWidget, QLabel, QMessageBox, QPushButton, QWidget
 from time import strftime
 
-from schedule_board import ScheduleBoard
-from chat_window import ChatWindow
+from temp_schedule_board import ScheduleBoard
+from temp_chat_window import ChatWindow
 
 
 class MainPage(QWidget):
@@ -405,7 +405,7 @@ class MainPage(QWidget):
             QMessageBox.information(self, student_str, student_str + '하였습니다.')
         else:
             QMessageBox.information(self, teacher_str, teacher_str + '하였습니다.')
-            
+
     def chat(self):
         self.chat_window = ChatWindow(self.user_info)
         self.chat_window.show()
@@ -440,7 +440,8 @@ class MainPage(QWidget):
                     if self.user_info[0] < 200000:
                         pass
                     else:
-                        c.execute(f'SELECT COUNT(teacher_alarm) FROM korchamhrd.`{chat_room[i][0]}` WHERE teacher_alarm=1')
+                        c.execute(
+                            f'SELECT COUNT(teacher_alarm) FROM korchamhrd.`{chat_room[i][0]}` WHERE teacher_alarm=1')
                         alarm_total += c.fetchall()[0][0]
 
                 c.close()
