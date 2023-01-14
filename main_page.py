@@ -438,7 +438,10 @@ class MainPage(QWidget):
 
                 for i in range(len(chat_room)):
                     if self.user_info[0] < 200000:
-                        pass
+                        c.execute(
+                            f'SELECT COUNT(student_alarm) FROM korchamhrd.`{chat_room[i][0]}` WHERE student_alarm=1')
+                        alarm_total += c.fetchall()[0][0]
+
                     else:
                         c.execute(
                             f'SELECT COUNT(teacher_alarm) FROM korchamhrd.`{chat_room[i][0]}` WHERE teacher_alarm=1')
