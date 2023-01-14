@@ -1,3 +1,5 @@
+#-*- coding: utf-8 -*-
+
 import datetime
 import time
 
@@ -173,7 +175,7 @@ class ChatWindow(QWidget):
         c = conn.cursor()
 
         c.execute(f'INSERT INTO korchamhrd.{self.chat_db_name} VALUES ("{self.user_info[1]}", '
-                  f'"{self.chat_input.text()}", "{datetime.datetime.now().time()}", 1, 1)')
+                  f'"{self.chat_input.text()}", "{datetime.datetime.now()}", 1, 1)')
         conn.commit()
 
         c.close()

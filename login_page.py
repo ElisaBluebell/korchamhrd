@@ -1,3 +1,5 @@
+#-*- coding: utf-8 -*-
+
 # 출석부 테이블이 없는 경우 새로 만들어야 함
 # 스키마는 korchamhrd, 테이블명은 문자열 YYYY-MM-DD 형식
 # 유저 id값 INT NOT NULL, 유저명 TEXT NOT NULL, 메세지 수신여부 INT NOT NULL(0 또는 1로 참, 거짓), 결석횟수 INT NOT NULL,

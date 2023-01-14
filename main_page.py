@@ -1,3 +1,5 @@
+#-*- coding: utf-8 -*-
+
 import datetime
 import threading
 
@@ -18,7 +20,6 @@ class MainPage(QWidget):
 
     def __init__(self):
         super().__init__()
-        th1 = threading.Thread(target=self.refresh_calendar, daemon=True)
         self.user_info = []
         self.schedule_board = 0
         self.chat_window = 0
@@ -39,7 +40,10 @@ class MainPage(QWidget):
         self.cut_off_btn = QPushButton(self)
 
         self.calendar = QCalendarWidget(self)
+        th1 = threading.Thread(target=self.refresh_calendar, daemon=True)
         th1.start()
+        chat_alarm = threading.Thread(target=self.chat_alarm, daemon=True)
+        chat_alarm.start()
 
     def set_db(self):
         conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='1234', db='korchamhrd')
@@ -421,6 +425,39 @@ class MainPage(QWidget):
 
         c.close()
         conn.close()
+
+    def chat_alarm(self):
+        while True:
+            alarm_total = 0
+            if self.user_info:
+                conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
+                c = conn.cursor()
+
+                c.execute(f'SHOW TABLES LIKE "%{self.user_info[1]}%"')
+                chat_room = c.fetchall()
+
+                for i in range(len(chat_room)):
+                    if self.user_info[0] < 200000:
+                        pass
+                    else:
+                        c.execute(f'SELECT COUNT(teacher_alarm) FROM korchamhrd.`{chat_room[i][0]}` WHERE teacher_alarm=1')
+                        alarm_total += c.fetchall()[0][0]
+
+                c.close()
+                conn.close()
+
+            else:
+                pass
+
+            if alarm_total != 0:
+                self.chat_btn.setText(f'상담\n({str(alarm_total)})')
+                pass
+
+
+            else:
+                self.chat_btn.setText('상담')
+
+            time.sleep(1)
 
     def log_out(self):
         reply = QMessageBox.question(self, '로그아웃', '로그아웃 하시겠습니까?', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
