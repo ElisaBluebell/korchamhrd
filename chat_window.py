@@ -40,6 +40,9 @@ class ChatWindow(QWidget):
         refresh_chat = threading.Thread(target=self.refresh_chat, daemon=True)
         refresh_chat.start()
 
+        if self.close():
+            refresh_chat.isDaemon()
+
     def set_label(self):
         self.title.setText('일대일 상담')
         self.title.setFont(QFont('D2Coding', 20))
@@ -126,7 +129,9 @@ class ChatWindow(QWidget):
     # 쓰레드로 돌릴 채팅창 최신화
     def refresh_chat(self):
         while True:
-            self.read_message()
+            self.chat_room_chekcher()
+            if self.chat_db_name != '':
+                self.read_message()
             time.sleep(0.5)
 
     def refresh_ui(self):
@@ -158,13 +163,13 @@ class ChatWindow(QWidget):
             self.chat_db_name = self.select_opponent_name.currentText() + '_' + self.user_info[1]
             # 보낸이, 내용, 시간, 학생알림, 교수알림 값을 가짐
             c.execute(f'CREATE TABLE IF NOT EXISTS korchamhrd.`{self.chat_db_name}` (sender TEXT NOT NULL, '
-                      f'content TEXT NOT NULL, time TEXT NOT NULL, studnet_alarm INT NOT NULL, '
+                      f'content TEXT NOT NULL, time TEXT NOT NULL, student_alarm INT NOT NULL, '
                       f'teacher_alarm INT NOT NULL)')
 
         else:
             self.chat_db_name = self.user_info[1] + '_' + self.select_opponent_name.currentText()
             c.execute(f'CREATE TABLE IF NOT EXISTS korchamhrd.`{self.chat_db_name}` (sender TEXT NOT NULL, '
-                      f'content TEXT NOT NULL, time TEXT NOT NULL, studnet_alarm INT NOT NULL, '
+                      f'content TEXT NOT NULL, time TEXT NOT NULL, student_alarm INT NOT NULL, '
                       f'teacher_alarm INT NOT NULL)')
 
         c.close()
@@ -184,6 +189,16 @@ class ChatWindow(QWidget):
         self.chat_input.clear()
         self.read_message()
 
+    def chat_room_chekcher(self):
+        self.chat_db_name = ''
+
+        if self.user_info[0] < 200000:
+            self.chat_db_name = self.select_opponent_name.currentText() + '_' + self.user_info[1]
+
+        else:
+            self.chat_db_name = self.user_info[1] + '_' + self.select_opponent_name.currentText()
+
+
     def read_message(self):
         self.chat_list.clear()
 
@@ -191,8 +206,10 @@ class ChatWindow(QWidget):
         c = conn.cursor()
 
         if self.user_info[0] < 200000:
-            c.execute(f'UPDATE korchamhrd.`{self.chat_db_name}` SET "student_alarm"=0')
+
+            c.execute(f'UPDATE korchamhrd.{self.chat_db_name} SET student_alarm=0')
             conn.commit()
+
         else:
             c.execute(f'UPDATE korchamhrd.{self.chat_db_name} SET teacher_alarm=0')
             conn.commit()

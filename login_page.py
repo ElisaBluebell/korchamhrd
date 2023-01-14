@@ -20,7 +20,7 @@ from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QLabel, QLineEdit, QMessageBox, QPushButton, QWidget
 
-from temp_main_page import MainPage
+from main_page import MainPage
 
 
 class LoginPage(QWidget):

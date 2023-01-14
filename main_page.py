@@ -12,8 +12,8 @@ from PyQt5.QtGui import QTextCharFormat
 from PyQt5.QtWidgets import QCalendarWidget, QLabel, QMessageBox, QPushButton, QWidget
 from time import strftime
 
-from temp_schedule_board import ScheduleBoard
-from temp_chat_window import ChatWindow
+from schedule_board import ScheduleBoard
+from chat_window import ChatWindow
 
 
 class MainPage(QWidget):
