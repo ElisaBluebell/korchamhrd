@@ -426,6 +426,7 @@ class MainPage(QWidget):
         c.close()
         conn.close()
 
+    # 신규 메세지 알림
     def chat_alarm(self):
         while True:
             alarm_total = 0
@@ -436,6 +437,7 @@ class MainPage(QWidget):
                 c.execute(f'SHOW TABLES LIKE "%{self.user_info[1]}%"')
                 chat_room = c.fetchall()
 
+                # 학생 또는 교사 알람 개수를 세서 모두 더함
                 for i in range(len(chat_room)):
                     if self.user_info[0] < 200000:
                         c.execute(

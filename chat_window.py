@@ -79,18 +79,21 @@ class ChatWindow(QWidget):
 
         # 학생일 경우
         if self.user_info[0] < 200000:
-
+            # 사용자 이름이 들어간 테이블 로드
             c.execute(f'SHOW TABLES LIKE "%{self.user_info[1]}%"')
             chat_table = c.fetchall()
             for i in range(len(chat_table)):
+                # 로드한 테이블의 알람 갯수 카운트
                 c.execute(
                     f'SELECT COUNT(student_alarm) FROM korchamhrd.`{chat_table[i][0]}` WHERE student_alarm=1')
+                # 알람이 존재할 경우 테이블 앞 3글자(교수명)을 리스트에 추가
                 if c.fetchone()[0] != 0:
                     new_chat_member.append(chat_table[i][0][:3])
 
             for i in range(len(self.chat_db)):
-                # 교수에 한해 이름을 체크박스에 추가함
+                # 수강과정 교수에 한해 이름을 체크박스에 추가함
                 if self.chat_db[i][2] == '교수':
+                    # 새 메세지를 가지고 있는 교수는 이름 뒤에 *표
                     if self.chat_db[i][1] in new_chat_member:
                         self.select_opponent_name.addItem(self.chat_db[i][1] + '*')
                     else:
@@ -104,20 +107,26 @@ class ChatWindow(QWidget):
 
             c.execute(f'SHOW TABLES LIKE "%{self.user_info[1]}%"')
             chat_table = c.fetchall()
+
             for i in range(len(chat_table)):
                 c.execute(
                     f'SELECT COUNT(teacher_alarm) FROM korchamhrd.`{chat_table[i][0]}` WHERE teacher_alarm=1')
                 if c.fetchone()[0] != 0:
                     new_chat_member.append(chat_table[i][0][4:])
 
+            # 새 메세지를 보낸 유저의 이름이 있는 클래스명 로드
             for i in range(len(new_chat_member)):
-                c.execute(f'SELECT DISTINCT b.class_name FROM korchamhrd.`{str(datetime.date.today())}` AS a INNER JOIN korchamhrd.curriculum_db AS b ON a.curriculum_id=b.id WHERE a.user_name="{new_chat_member[i]}"')
+                c.execute(f'SELECT DISTINCT b.class_name FROM korchamhrd.`{str(datetime.date.today())}` AS a '
+                          f'INNER JOIN korchamhrd.curriculum_db AS b ON a.curriculum_id=b.id '
+                          f'WHERE a.user_name="{new_chat_member[i]}"')
                 new_chat_class.append(c.fetchone()[0])
 
             # 수강과정명이 중복되지 않게 체크박스에 추가함
             for i in range(len(self.chat_db)):
                 if self.chat_db[i][2] not in temp and self.chat_db[i][3] == 1:
                     temp.append(self.chat_db[i][2])
+
+                    # 새 메세지를 보낸 유저가 속한 클래스명 뒤에 *표
                     if self.chat_db[i][2] not in new_chat_class:
                         self.select_opponent_class.addItem(self.chat_db[i][2])
                     else:
@@ -146,6 +155,7 @@ class ChatWindow(QWidget):
         conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
         c = conn.cursor()
 
+        # *표
         c.execute(f'SHOW TABLES LIKE "%{self.user_info[1]}%"')
         chat_table = c.fetchall()
         for i in range(len(chat_table)):
@@ -212,11 +222,14 @@ class ChatWindow(QWidget):
         conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
         c = conn.cursor()
         if self.user_info[0] < 200000:
+            # 이름 뒤에 *표가 있을 경우 글자수를 1개 제외해서 정상적인 이름을 활용하여 테이블 생성
             if '*' in self.select_opponent_name.currentText():
                 length = len(self.select_opponent_name.currentText()) - 1
                 self.chat_db_name = self.select_opponent_name.currentText()[:length] + '_' + self.user_info[1]
+
             else:
                 self.chat_db_name = self.select_opponent_name.currentText() + '_' + self.user_info[1]
+
             # 보낸이, 내용, 시간, 학생알림, 교수알림 값을 가짐
             c.execute(f'CREATE TABLE IF NOT EXISTS korchamhrd.`{self.chat_db_name}` (sender TEXT NOT NULL, '
                       f'content TEXT NOT NULL, time TEXT NOT NULL, student_alarm INT NOT NULL, '
@@ -226,8 +239,10 @@ class ChatWindow(QWidget):
             if '*' in self.select_opponent_name.currentText():
                 length = len(self.select_opponent_name.currentText()) - 1
                 self.chat_db_name = self.user_info[1] + '_' + self.select_opponent_name.currentText()[:length]
+
             else:
                 self.chat_db_name = self.user_info[1] + '_' + self.select_opponent_name.currentText()
+
             c.execute(f'CREATE TABLE IF NOT EXISTS korchamhrd.`{self.chat_db_name}` (sender TEXT NOT NULL, '
                       f'content TEXT NOT NULL, time TEXT NOT NULL, student_alarm INT NOT NULL, '
                       f'teacher_alarm INT NOT NULL)')

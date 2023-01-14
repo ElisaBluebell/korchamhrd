@@ -128,7 +128,6 @@ class LoginPage(QWidget):
 
             # 휴일이 있거나 요일별로 출석부를 긁어와야 하는 날짜가 달라 예외설정을 해줌 기본은 1(전날)
             day_off = 1
-            # 하루 휴일이 존재할 경우 2 등 다르게 설정
             if str(datetime.date.today()) in self.holiday4:
                 day_off = 4
             elif datetime.date.today().weekday() == 6 or str(datetime.date.today()) in self.holiday2:
