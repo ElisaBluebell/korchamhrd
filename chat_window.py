@@ -212,16 +212,22 @@ class ChatWindow(QWidget):
         conn = pymysql.connect(host='localhost', port=3306, user='root', password='1234', db='korchamhrd')
         c = conn.cursor()
         if self.user_info[0] < 200000:
-            length = len(self.select_opponent_name.currentText()) - 1
-            self.chat_db_name = self.select_opponent_name.currentText()[:length] + '_' + self.user_info[1]
+            if '*' in self.select_opponent_name.currentText():
+                length = len(self.select_opponent_name.currentText()) - 1
+                self.chat_db_name = self.select_opponent_name.currentText()[:length] + '_' + self.user_info[1]
+            else:
+                self.chat_db_name = self.select_opponent_name.currentText() + '_' + self.user_info[1]
             # 보낸이, 내용, 시간, 학생알림, 교수알림 값을 가짐
             c.execute(f'CREATE TABLE IF NOT EXISTS korchamhrd.`{self.chat_db_name}` (sender TEXT NOT NULL, '
                       f'content TEXT NOT NULL, time TEXT NOT NULL, student_alarm INT NOT NULL, '
                       f'teacher_alarm INT NOT NULL)')
 
         else:
-            length = len(self.select_opponent_name.currentText()) - 1
-            self.chat_db_name = self.user_info[1] + '_' + self.select_opponent_name.currentText()[:length]
+            if '*' in self.select_opponent_name.currentText():
+                length = len(self.select_opponent_name.currentText()) - 1
+                self.chat_db_name = self.user_info[1] + '_' + self.select_opponent_name.currentText()[:length]
+            else:
+                self.chat_db_name = self.user_info[1] + '_' + self.select_opponent_name.currentText()
             c.execute(f'CREATE TABLE IF NOT EXISTS korchamhrd.`{self.chat_db_name}` (sender TEXT NOT NULL, '
                       f'content TEXT NOT NULL, time TEXT NOT NULL, student_alarm INT NOT NULL, '
                       f'teacher_alarm INT NOT NULL)')
